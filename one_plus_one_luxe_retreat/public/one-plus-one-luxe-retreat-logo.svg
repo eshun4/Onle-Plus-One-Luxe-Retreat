@@ -1,0 +1,65 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 512 512"
+  role="img"
+  aria-label="The Copper House favicon"
+>
+  <!-- Outer diamond -->
+  <path
+    d="M256 36 L476 256 L256 476 L36 256 Z"
+    fill="none"
+    stroke="#B87333"
+    stroke-width="34"
+    stroke-linejoin="round"
+  />
+
+  <!-- Inner diamond glow -->
+  <path
+    d="M256 108 L404 256 L256 404 L108 256 Z"
+    fill="#211E19"
+    stroke="#D9A05B"
+    stroke-width="14"
+    stroke-linejoin="round"
+    opacity="0.9"
+  />
+
+  <!-- House roof -->
+  <path
+    d="M158 270 L256 184 L354 270"
+    fill="none"
+    stroke="#F2E7D2"
+    stroke-width="34"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <!-- House body -->
+  <path
+    d="M190 270 V352 H322 V270"
+    fill="none"
+    stroke="#C8B99D"
+    stroke-width="32"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <!-- Door -->
+  <path
+    d="M239 352 V304 H273 V352"
+    fill="none"
+    stroke="#B87333"
+    stroke-width="24"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <!-- Top copper dot -->
+  <circle cx="256" cy="36" r="22" fill="#D9A05B" />
+
+  <!-- Bottom muted dot -->
+  <circle cx="256" cy="476" r="18" fill="#8F8678" />
+
+  <!-- Left / right copper dots -->
+  <circle cx="36" cy="256" r="18" fill="#D9A05B" opacity="0.85" />
+  <circle cx="476" cy="256" r="18" fill="#D9A05B" opacity="0.85" />
+</svg>

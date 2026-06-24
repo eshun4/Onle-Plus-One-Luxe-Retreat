@@ -177,7 +177,7 @@ const settings = {
 
   home: {
     slider: {
-      autoPlayDelay: 4200,
+      autoPlayDelay: 10000,
       transitionMs: 900,
       wheelThrottle: 1200,
       swipeThreshold: 40,

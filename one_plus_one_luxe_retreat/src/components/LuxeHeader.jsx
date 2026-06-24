@@ -1,45 +1,39 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import settings from "../settings/settings";
 import "./LuxeHeader.css";
 
-function SearchIcon() {
+function CalendarIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
-      <circle
-        cx="11"
-        cy="11"
-        r="6.5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
       <path
-        d="M16 16l4.2 4.2"
+        d="M7 3v3M17 3v3"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.8"
         strokeLinecap="round"
       />
-    </svg>
-  );
-}
-
-function UserIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <circle
-        cx="12"
-        cy="8"
-        r="3.2"
+      <rect
+        x="4"
+        y="5"
+        width="16"
+        height="15"
+        rx="2.5"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.8"
       />
       <path
-        d="M5.5 19c1.1-3.1 4-4.8 6.5-4.8S17.4 15.9 18.5 19"
+        d="M4 10h16"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <path
+        d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.4"
         strokeLinecap="round"
       />
     </svg>
@@ -72,27 +66,66 @@ function MenuIcon() {
 }
 
 const navLinks = [
-  { label: "Stays", href: "#home" },
-  { label: "Suites", href: "#suites" },
-  { label: "Experiences", href: "#experiences" },
+  { label: "Home", href: "#home" },
+  { label: "The Stay", href: "#stay" },
   { label: "Gallery", href: "#gallery" },
-  { label: "Dining", href: "#dining" },
-  { label: "Contact", href: "#contact" },
+  { label: "Amenities", href: "#amenities" },
+  { label: "Location", href: "#location" },
+  { label: "Reviews", href: "#reviews" },
+  { label: "FAQ", href: "#faq" },
 ];
 
-const quickLinks = [
-  { label: "Our Suites", href: "#suites" },
-  { label: "Resort Amenities", href: "#amenities" },
-  { label: "Private Events", href: "#events" },
-  { label: "Location", href: "#location" },
-];
+function getInitialActiveHref() {
+  if (typeof window === "undefined") {
+    return "#home";
+  }
+
+  const currentHash = window.location.hash;
+
+  if (navLinks.some((link) => link.href === currentHash)) {
+    return currentHash;
+  }
+
+  return "#home";
+}
+
+function getBannerHeight() {
+  const banner = document.querySelector(".luxe-header__banner");
+
+  if (!banner) {
+    return 0;
+  }
+
+  return Math.ceil(banner.getBoundingClientRect().height);
+}
+
+function getCurrentSectionHref() {
+  const markerY =
+    (window.scrollY || window.pageYOffset) + getBannerHeight() + 24;
+
+  let currentHref = "#home";
+
+  navLinks.forEach((link) => {
+    const sectionId = link.href.replace("#", "");
+    const section = document.getElementById(sectionId);
+
+    if (section && section.offsetTop <= markerY) {
+      currentHref = link.href;
+    }
+  });
+
+  return currentHref;
+}
 
 export default function LuxeHeader({
   logo,
   logoSrc,
-  logoAlt = "One Plus One Luxe Resort",
+  logoAlt = "One Plus One Luxe Retreat",
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [activeHref, setActiveHref] = useState(getInitialActiveHref);
+  const activeClickLockRef = useRef(null);
+  const frameRef = useRef(null);
   const { theme, screens } = settings;
 
   const cssVars = useMemo(
@@ -134,29 +167,82 @@ export default function LuxeHeader({
     [theme, screens],
   );
 
+  useEffect(() => {
+    function updateActiveHref() {
+      if (frameRef.current) {
+        cancelAnimationFrame(frameRef.current);
+      }
+
+      frameRef.current = requestAnimationFrame(() => {
+        const activeClickLock = activeClickLockRef.current;
+
+        if (activeClickLock && performance.now() < activeClickLock.expiresAt) {
+          setActiveHref(activeClickLock.href);
+          return;
+        }
+
+        activeClickLockRef.current = null;
+        setActiveHref(getCurrentSectionHref());
+      });
+    }
+
+    function handleHashChange() {
+      const currentHash = window.location.hash;
+
+      if (navLinks.some((link) => link.href === currentHash)) {
+        setActiveHref(currentHash);
+      } else {
+        updateActiveHref();
+      }
+    }
+
+    updateActiveHref();
+
+    window.addEventListener("scroll", updateActiveHref, { passive: true });
+    window.addEventListener("resize", updateActiveHref);
+    window.addEventListener("hashchange", handleHashChange);
+
+    return () => {
+      window.removeEventListener("scroll", updateActiveHref);
+      window.removeEventListener("resize", updateActiveHref);
+      window.removeEventListener("hashchange", handleHashChange);
+
+      if (frameRef.current) {
+        cancelAnimationFrame(frameRef.current);
+      }
+    };
+  }, []);
+
+  function handleNavClick(href) {
+    activeClickLockRef.current = {
+      href,
+      expiresAt: performance.now() + 2400,
+    };
+
+    setActiveHref(href);
+    setMenuOpen(false);
+  }
+
   return (
     <header className="luxe-header" style={cssVars}>
       <div className="luxe-header__banner">
         <div className="luxe-header__container luxe-header__banner-inner">
           <p className="luxe-header__banner-copy">
-            Direct booking perks available now{" "}
-            <a href="#booking">Explore More</a>
+            Book direct for the best retreat experience.{" "}
+            <a href="#availability">Check your dates</a>
           </p>
-
-          <div className="luxe-header__quick-links">
-            {quickLinks.map((link) => (
-              <a key={link.label} href={link.href}>
-                {link.label}
-              </a>
-            ))}
-          </div>
         </div>
       </div>
 
       <div className="luxe-header__nav-shell">
         <div className="luxe-header__nav-bar">
           <div className="luxe-header__container luxe-header__nav-inner">
-            <a className="luxe-header__brand" href="#home" aria-label={logoAlt}>
+            <a
+              className="luxe-header__brand"
+              href="#home"
+              aria-label={logoAlt}
+              onClick={() => handleNavClick("#home")}
+            >
               <span className="luxe-header__brand-mark">
                 {logo ? (
                   logo
@@ -166,7 +252,7 @@ export default function LuxeHeader({
               </span>
 
               <span className="luxe-header__brand-name">
-                One Plus One Luxe Resort
+                One Plus One Luxe Retreat
               </span>
             </a>
 
@@ -175,27 +261,38 @@ export default function LuxeHeader({
               aria-label="Primary navigation"
             >
               <ul className="luxe-header__nav-list">
-                {navLinks.map((link) => (
-                  <li key={link.label} className="luxe-header__nav-item">
-                    <a href={link.href}>{link.label}</a>
-                  </li>
-                ))}
+                {navLinks.map((link) => {
+                  const isActive = activeHref === link.href;
+
+                  return (
+                    <li
+                      key={link.label}
+                      className={`luxe-header__nav-item ${
+                        isActive ? "is-active" : ""
+                      }`}
+                    >
+                      <a
+                        href={link.href}
+                        aria-current={isActive ? "page" : undefined}
+                        onClick={() => handleNavClick(link.href)}
+                      >
+                        {link.label}
+                      </a>
+                    </li>
+                  );
+                })}
               </ul>
             </nav>
 
             <div className="luxe-header__actions">
-              <button className="luxe-header__search-desktop" type="button">
-                <span>Search</span>
-                <SearchIcon />
-              </button>
-
-              <button
-                className="luxe-header__icon-button luxe-header__icon-desktop"
-                type="button"
-                aria-label="Account"
+              <a
+                className="luxe-header__cta-desktop"
+                href="#availability"
+                onClick={() => handleNavClick("#stay")}
               >
-                <UserIcon />
-              </button>
+                <span>Check Availability</span>
+                <CalendarIcon />
+              </a>
 
               <button
                 className="luxe-header__icon-button luxe-header__menu-toggle"
@@ -210,12 +307,16 @@ export default function LuxeHeader({
           </div>
         </div>
 
-        <div className="luxe-header__search-row">
+        <div className="luxe-header__cta-row">
           <div className="luxe-header__container">
-            <button className="luxe-header__search-mobile" type="button">
-              <span>Search</span>
-              <SearchIcon />
-            </button>
+            <a
+              className="luxe-header__cta-mobile"
+              href="#availability"
+              onClick={() => handleNavClick("#stay")}
+            >
+              <span>Check Availability</span>
+              <CalendarIcon />
+            </a>
           </div>
         </div>
 
@@ -223,27 +324,21 @@ export default function LuxeHeader({
           className={`luxe-header__mobile-panel ${menuOpen ? "is-open" : ""}`}
         >
           <div className="luxe-header__container luxe-header__mobile-panel-inner">
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                onClick={() => setMenuOpen(false)}
-              >
-                {link.label}
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = activeHref === link.href;
 
-            <div className="luxe-header__mobile-divider" />
-
-            {quickLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                onClick={() => setMenuOpen(false)}
-              >
-                {link.label}
-              </a>
-            ))}
+              return (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className={isActive ? "is-active" : ""}
+                  aria-current={isActive ? "page" : undefined}
+                  onClick={() => handleNavClick(link.href)}
+                >
+                  {link.label}
+                </a>
+              );
+            })}
           </div>
         </div>
       </div>
