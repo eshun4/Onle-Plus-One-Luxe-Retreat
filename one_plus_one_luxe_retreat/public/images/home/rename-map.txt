@@ -1,0 +1,23 @@
+One Plus One Luxe Resort image rename map
+Images were copied/renamed only; no image editing was applied.
+
+airbnb_1(1).jpeg -> 01-bedroom-curtains-black-bed.jpeg | bytes unchanged: True
+airbnb_2(1).jpeg -> 02-entryway-hanging-chair-black-door.jpeg | bytes unchanged: True
+airbnb_3(1).jpeg -> 03-living-area-sliding-door-black-door.jpeg | bytes unchanged: True
+airbnb_4(1).jpeg -> 04-black-bathroom-shower.jpeg | bytes unchanged: True
+airbnb_5(1).jpeg -> 05-open-living-room-tv-sofa.jpeg | bytes unchanged: True
+airbnb_6(1).jpeg -> 06-exterior-balcony-front-view.jpeg | bytes unchanged: True
+airbnb_7(1).jpeg -> 07-rooftop-terrace-gazebo.jpeg | bytes unchanged: True
+airbnb_8(1).jpeg -> 08-kitchen-breakfast-bar-snacks.jpeg | bytes unchanged: True
+airbnb_9(1).jpeg -> 09-white-kitchen-bar-stools.jpeg | bytes unchanged: True
+airbnb_10(1).jpeg -> 10-kitchen-window-bar-stools.jpeg | bytes unchanged: True
+airbnb_11(1).jpeg -> 11-bedroom-lounge-chair-mirror.jpeg | bytes unchanged: True
+airbnb_12(1).jpeg -> 12-bedroom-bathroom-glass-wall.jpeg | bytes unchanged: True
+airbnb_13(1).jpeg -> 13-bedroom-window-full-view.jpeg | bytes unchanged: True
+airbnb_14(1).jpeg -> 14-welcome-basket-bed-detail.jpeg | bytes unchanged: True
+airbnb_15(1).jpeg -> 15-bathtub-waterfall-wall-angle.jpeg | bytes unchanged: True
+airbnb_16(1).jpeg -> 16-luxury-bathtub-waterfall-view.jpeg | bytes unchanged: True
+airbnb_17(1).jpeg -> 17-bathtub-chandelier-waterfall-detail.jpeg | bytes unchanged: True
+airbnb_18(1).jpeg -> 18-bathroom-glass-window-wide.jpeg | bytes unchanged: True
+airbnb_19(1).jpeg -> 19-bedroom-bathroom-wide-angle.jpeg | bytes unchanged: True
+airbnb_20(1).jpeg -> 20-bedroom-black-bed-wide-view.jpeg | bytes unchanged: True

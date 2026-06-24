@@ -1,0 +1,12 @@
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.app {
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: #0e0c0a;
+  color: #f8f3ee;
+}

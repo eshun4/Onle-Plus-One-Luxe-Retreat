@@ -1,0 +1,239 @@
+/*
+  screens.css
+  Global responsive screen settings for One Plus One Luxe Retreat.
+
+  Rule:
+  Components should use these variables/classes instead of hardcoding
+  widths, padding, gaps, font sizes, or grid columns.
+*/
+
+/* =========================
+   BASE: SMALL SCREENS
+   0px - 767px
+========================= */
+
+:root {
+  /* Breakpoint reference */
+  --screen-small-min: 0px;
+  --screen-medium-min: 768px;
+  --screen-large-min: 1024px;
+
+  /* Page width */
+  --page-max-width: 100%;
+  --page-padding-x: 1rem;
+
+  /* Section spacing */
+  --section-padding-y: 3.5rem;
+  --section-padding-y-sm: 2.5rem;
+  --section-padding-y-lg: 4.5rem;
+
+  /* Layout gaps */
+  --layout-gap-xs: 0.5rem;
+  --layout-gap-sm: 0.75rem;
+  --layout-gap-md: 1rem;
+  --layout-gap-lg: 1.5rem;
+  --layout-gap-xl: 2rem;
+
+  /* Grid behavior */
+  --grid-columns-2: 1fr;
+  --grid-columns-3: 1fr;
+  --grid-columns-4: 1fr;
+  --grid-gap: 1rem;
+
+  /* Text sizing */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-md: 1.0625rem;
+  --text-lg: 1.125rem;
+
+  /* Heading sizing */
+  --heading-sm: 1.5rem;
+  --heading-md: 2rem;
+  --heading-lg: 2.5rem;
+  --heading-xl: 3rem;
+
+  /* Element sizing */
+  --button-height: 2.875rem;
+  --input-height: 2.875rem;
+  --nav-height: 4rem;
+  --card-padding: 1rem;
+
+  /* Media/image sizing */
+  --media-height-sm: 12rem;
+  --media-height-md: 16rem;
+  --media-height-lg: 22rem;
+}
+
+/* =========================
+   MEDIUM SCREENS
+   768px - 1023px
+========================= */
+
+@media (min-width: 768px) {
+  :root {
+    /* Page width */
+    --page-max-width: 720px;
+    --page-padding-x: 1.5rem;
+
+    /* Section spacing */
+    --section-padding-y: 5rem;
+    --section-padding-y-sm: 3.5rem;
+    --section-padding-y-lg: 6rem;
+
+    /* Layout gaps */
+    --layout-gap-md: 1.25rem;
+    --layout-gap-lg: 2rem;
+    --layout-gap-xl: 2.5rem;
+
+    /* Grid behavior */
+    --grid-columns-2: repeat(2, minmax(0, 1fr));
+    --grid-columns-3: repeat(2, minmax(0, 1fr));
+    --grid-columns-4: repeat(2, minmax(0, 1fr));
+    --grid-gap: 1.5rem;
+
+    /* Text sizing */
+    --text-base: 1rem;
+    --text-md: 1.125rem;
+    --text-lg: 1.25rem;
+
+    /* Heading sizing */
+    --heading-sm: 1.75rem;
+    --heading-md: 2.5rem;
+    --heading-lg: 3.25rem;
+    --heading-xl: 4rem;
+
+    /* Element sizing */
+    --button-height: 3rem;
+    --input-height: 3rem;
+    --nav-height: 4.5rem;
+    --card-padding: 1.25rem;
+
+    /* Media/image sizing */
+    --media-height-sm: 14rem;
+    --media-height-md: 20rem;
+    --media-height-lg: 28rem;
+  }
+}
+
+/* =========================
+   LARGE SCREENS
+   1024px and above
+========================= */
+
+@media (min-width: 1024px) {
+  :root {
+    /* Page width */
+    --page-max-width: 1180px;
+    --page-padding-x: 2rem;
+
+    /* Section spacing */
+    --section-padding-y: 6.5rem;
+    --section-padding-y-sm: 4rem;
+    --section-padding-y-lg: 8rem;
+
+    /* Layout gaps */
+    --layout-gap-md: 1.5rem;
+    --layout-gap-lg: 2.5rem;
+    --layout-gap-xl: 3rem;
+
+    /* Grid behavior */
+    --grid-columns-2: repeat(2, minmax(0, 1fr));
+    --grid-columns-3: repeat(3, minmax(0, 1fr));
+    --grid-columns-4: repeat(4, minmax(0, 1fr));
+    --grid-gap: 2rem;
+
+    /* Text sizing */
+    --text-base: 1rem;
+    --text-md: 1.125rem;
+    --text-lg: 1.25rem;
+
+    /* Heading sizing */
+    --heading-sm: 2rem;
+    --heading-md: 3rem;
+    --heading-lg: 4rem;
+    --heading-xl: 5rem;
+
+    /* Element sizing */
+    --button-height: 3.125rem;
+    --input-height: 3.125rem;
+    --nav-height: 5rem;
+    --card-padding: 1.5rem;
+
+    /* Media/image sizing */
+    --media-height-sm: 16rem;
+    --media-height-md: 24rem;
+    --media-height-lg: 34rem;
+  }
+}
+
+/* =========================
+   GLOBAL RESPONSIVE HELPERS
+========================= */
+
+.screen-container {
+  width: min(100% - calc(var(--page-padding-x) * 2), var(--page-max-width));
+  margin-inline: auto;
+}
+
+.screen-section {
+  padding-block: var(--section-padding-y);
+}
+
+.screen-section-sm {
+  padding-block: var(--section-padding-y-sm);
+}
+
+.screen-section-lg {
+  padding-block: var(--section-padding-y-lg);
+}
+
+.screen-grid {
+  display: grid;
+  gap: var(--grid-gap);
+}
+
+.screen-grid-2 {
+  grid-template-columns: var(--grid-columns-2);
+}
+
+.screen-grid-3 {
+  grid-template-columns: var(--grid-columns-3);
+}
+
+.screen-grid-4 {
+  grid-template-columns: var(--grid-columns-4);
+}
+
+.screen-stack-sm {
+  display: grid;
+  gap: var(--layout-gap-sm);
+}
+
+.screen-stack-md {
+  display: grid;
+  gap: var(--layout-gap-md);
+}
+
+.screen-stack-lg {
+  display: grid;
+  gap: var(--layout-gap-lg);
+}
+
+.screen-media-sm {
+  width: 100%;
+  height: var(--media-height-sm);
+  object-fit: cover;
+}
+
+.screen-media-md {
+  width: 100%;
+  height: var(--media-height-md);
+  object-fit: cover;
+}
+
+.screen-media-lg {
+  width: 100%;
+  height: var(--media-height-lg);
+  object-fit: cover;
+}
