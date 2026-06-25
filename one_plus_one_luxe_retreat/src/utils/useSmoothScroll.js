@@ -147,7 +147,7 @@ function getNativeScrollTarget(target) {
   }
 
   return target.closest(
-    "[data-native-scroll='true'], .gallery-page__panel-inner, .gallery-page__lightbox-caption",
+    "[data-native-scroll='true'], [data-allow-native-scroll='true'], .stay-booking, .gallery-page__panel-inner, .gallery-page__lightbox-caption",
   );
 }
 

@@ -108,6 +108,14 @@ const stayPanels = [
 
 const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+const NIGHTLY_RATE_USD = 85;
+const GHANA_TIME_ZONE = "Africa/Accra";
+const USD_TO_GHS_RATE_URL = "https://open.er-api.com/v6/latest/USD";
+
+const PROPERTY_MANAGER_NAME = "Augustina";
+const PROPERTY_MANAGER_ROLE = "Property Manager";
+const PROPERTY_MANAGER_WHATSAPP_NUMBER = "233244084793";
+
 const monthLabels = [
   "January",
   "February",
@@ -157,6 +165,12 @@ function fromIsoDate(value) {
   return new Date(year, month - 1, day);
 }
 
+function addDays(date, amount) {
+  const nextDate = new Date(date);
+  nextDate.setDate(nextDate.getDate() + amount);
+  return nextDate;
+}
+
 function addMonths(date, amount) {
   return new Date(date.getFullYear(), date.getMonth() + amount, 1);
 }
@@ -195,6 +209,51 @@ function formatShortDate(value) {
   });
 }
 
+function formatUsd(value) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function formatGhs(value) {
+  return new Intl.NumberFormat("en-GH", {
+    style: "currency",
+    currency: "GHS",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function formatGhsRate(value) {
+  return new Intl.NumberFormat("en-GH", {
+    style: "currency",
+    currency: "GHS",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+function getVisitorIsLikelyInGhana() {
+  if (typeof window === "undefined" || typeof navigator === "undefined") {
+    return false;
+  }
+
+  try {
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const languages = navigator.languages?.length
+      ? navigator.languages
+      : [navigator.language].filter(Boolean);
+
+    return (
+      timeZone === GHANA_TIME_ZONE ||
+      languages.some((language) => language.toUpperCase().endsWith("-GH"))
+    );
+  } catch {
+    return false;
+  }
+}
+
 function getNightCount(checkIn, checkout) {
   const startDate = fromIsoDate(checkIn);
   const endDate = fromIsoDate(checkout);
@@ -202,6 +261,41 @@ function getNightCount(checkIn, checkout) {
   if (!startDate || !endDate || endDate <= startDate) return 0;
 
   return Math.round((endDate - startDate) / 86400000);
+}
+
+function isSimulatedUnavailableDate(date, todayDate) {
+  if (!date || date < todayDate) return false;
+
+  const day = date.getDate();
+
+  /*
+    Placeholder unavailable groups for future booking logic.
+
+    These simulate unavailable/booked dates:
+    - 8th to 10th
+    - 18th to 20th
+    - 25th
+  */
+  return (day >= 8 && day <= 10) || (day >= 18 && day <= 20) || day === 25;
+}
+
+function dateRangeHasUnavailableDate(checkIn, checkout, todayDate) {
+  const startDate = fromIsoDate(checkIn);
+  const endDate = fromIsoDate(checkout);
+
+  if (!startDate || !endDate || endDate <= startDate) return false;
+
+  let currentDate = new Date(startDate);
+
+  while (currentDate <= endDate) {
+    if (isSimulatedUnavailableDate(currentDate, todayDate)) {
+      return true;
+    }
+
+    currentDate = addDays(currentDate, 1);
+  }
+
+  return false;
 }
 
 function buildCalendarCells(viewDate) {
@@ -249,39 +343,56 @@ function ArrowIcon({ direction = "right" }) {
   );
 }
 
-function BookIcon() {
+function WhatsAppIcon({ className = "" }) {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
+    <svg
+      className={className}
+      viewBox="0 0 32 32"
+      aria-hidden="true"
+      focusable="false"
+    >
       <path
-        d="M7 3v3M17 3v3"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <rect
-        x="4"
-        y="5"
-        width="16"
-        height="15"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
+        fill="#25D366"
+        d="M16.02 2.9C8.74 2.9 2.84 8.8 2.84 16.08c0 2.32.61 4.59 1.76 6.59L2.7 29.1l6.58-1.73a13.1 13.1 0 0 0 6.73 1.85h.01c7.28 0 13.18-5.9 13.18-13.18S23.3 2.9 16.02 2.9Z"
       />
       <path
-        d="M4 10h16"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
+        fill="#FFFFFF"
+        d="M23.64 19.78c-.32-.16-1.88-.93-2.17-1.03-.29-.11-.5-.16-.71.16-.21.32-.81 1.03-1 1.24-.18.21-.37.24-.69.08-.32-.16-1.33-.49-2.54-1.57-.94-.84-1.57-1.87-1.76-2.19-.18-.32-.02-.49.14-.65.14-.14.32-.37.48-.55.16-.18.21-.32.32-.53.11-.21.05-.4-.03-.55-.08-.16-.71-1.7-.97-2.33-.26-.62-.52-.53-.71-.54h-.61c-.21 0-.55.08-.84.4-.29.32-1.1 1.08-1.1 2.62s1.13 3.04 1.29 3.25c.16.21 2.23 3.4 5.41 4.77.76.33 1.34.52 1.8.67.76.24 1.45.21 2 .13.61-.09 1.88-.77 2.15-1.51.27-.74.27-1.37.19-1.51-.08-.13-.29-.21-.61-.37Z"
       />
+    </svg>
+  );
+}
+
+function BookNowIcon({ className = "" }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+    >
       <path
-        d="M9 15l2 2 4-5"
+        d="M7 11V8.8C7 5.6 9.1 3.5 12 3.5s5 2.1 5 5.3V11"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.9"
         strokeLinecap="round"
-        strokeLinejoin="round"
+      />
+      <rect
+        x="5"
+        y="10"
+        width="14"
+        height="10"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.9"
+      />
+      <path
+        d="M12 14v2.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
       />
     </svg>
   );
@@ -290,6 +401,7 @@ function BookIcon() {
 function AvailabilityBooking() {
   const todayDate = useMemo(() => normalizeDate(new Date()), []);
   const todayIso = useMemo(() => toIsoDate(todayDate), [todayDate]);
+
   const [viewDate, setViewDate] = useState(
     () => new Date(todayDate.getFullYear(), todayDate.getMonth(), 1),
   );
@@ -301,14 +413,102 @@ function AvailabilityBooking() {
   const [guestPhone, setGuestPhone] = useState("");
   const [guestMessage, setGuestMessage] = useState("");
   const [submitNote, setSubmitNote] = useState("");
+  const [visitorIsInGhana] = useState(() => getVisitorIsLikelyInGhana());
+  const [usdToGhsRate, setUsdToGhsRate] = useState(null);
+
+  useEffect(() => {
+    if (!visitorIsInGhana) return undefined;
+
+    let isMounted = true;
+
+    async function loadGhsRate() {
+      try {
+        const response = await fetch(USD_TO_GHS_RATE_URL, {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error("Unable to load USD to GHS exchange rate.");
+        }
+
+        const data = await response.json();
+        const nextRate = Number(data?.rates?.GHS);
+
+        if (isMounted && Number.isFinite(nextRate) && nextRate > 0) {
+          setUsdToGhsRate(nextRate);
+        }
+      } catch {
+        if (isMounted) {
+          setUsdToGhsRate(null);
+        }
+      }
+    }
+
+    loadGhsRate();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [visitorIsInGhana]);
 
   const calendarCells = useMemo(() => buildCalendarCells(viewDate), [viewDate]);
   const monthTitle = monthLabels[viewDate.getMonth()];
   const yearTitle = viewDate.getFullYear();
+
   const nights = getNightCount(checkIn, checkout);
-  const hasValidDates = Boolean(
-    checkIn && checkout && compareIsoDates(checkout, checkIn) > 0,
+
+  /*
+    Pricing uses inclusive days.
+
+    Example:
+    Check-in Monday, checkout Tuesday
+    nights = 1
+    pricedDays = 2
+    total = 2 × $85
+  */
+  const pricedDays = nights ? nights + 1 : 0;
+
+  const estimatedTotalUsd = pricedDays * NIGHTLY_RATE_USD;
+  const estimatedTotalGhs = usdToGhsRate ? estimatedTotalUsd * usdToGhsRate : 0;
+
+  const shouldShowGhsTotal = Boolean(
+    visitorIsInGhana &&
+    pricedDays &&
+    Number.isFinite(estimatedTotalGhs) &&
+    estimatedTotalGhs > 0,
   );
+
+  const nightlyRateLabel = formatUsd(NIGHTLY_RATE_USD);
+
+  const estimatedTotalLabel = pricedDays
+    ? shouldShowGhsTotal
+      ? formatGhs(estimatedTotalGhs)
+      : formatUsd(estimatedTotalUsd)
+    : "—";
+
+  const priceCalculationLabel = pricedDays
+    ? shouldShowGhsTotal
+      ? `${pricedDays} ${
+          pricedDays === 1 ? "day" : "days"
+        } × ${nightlyRateLabel} · $1≈${formatGhsRate(usdToGhsRate)}`
+      : `${pricedDays} ${pricedDays === 1 ? "day" : "days"} × ${nightlyRateLabel}`
+    : visitorIsInGhana
+      ? "Select dates to calculate in Ghana cedis"
+      : `Select dates to calculate ${nightlyRateLabel} per day`;
+
+  const datesIncludeUnavailable = dateRangeHasUnavailableDate(
+    checkIn,
+    checkout,
+    todayDate,
+  );
+
+  const hasValidDates = Boolean(
+    checkIn &&
+    checkout &&
+    compareIsoDates(checkout, checkIn) > 0 &&
+    !datesIncludeUnavailable,
+  );
+
   const isFormReady = Boolean(
     hasValidDates && guestCount && guestName.trim() && guestPhone.trim(),
   );
@@ -322,7 +522,9 @@ function AvailabilityBooking() {
   }
 
   function handleDateChoice(cell) {
-    if (!cell.isCurrentMonth || cell.date < todayDate) return;
+    const isUnavailable = isSimulatedUnavailableDate(cell.date, todayDate);
+
+    if (!cell.isCurrentMonth || cell.date < todayDate || isUnavailable) return;
 
     const selectedIso = cell.iso;
 
@@ -338,6 +540,19 @@ function AvailabilityBooking() {
     if (compareIsoDates(selectedIso, checkIn) <= 0) {
       setCheckIn(selectedIso);
       setCheckout("");
+      return;
+    }
+
+    const nextRangeHasUnavailableDate = dateRangeHasUnavailableDate(
+      checkIn,
+      selectedIso,
+      todayDate,
+    );
+
+    if (nextRangeHasUnavailableDate) {
+      setSubmitNote(
+        "That date range includes unavailable days. Please choose another checkout date.",
+      );
       return;
     }
 
@@ -379,10 +594,12 @@ function AvailabilityBooking() {
 
   function buildRequestMessage() {
     return [
-      "Hello, I would like to check availability for One Plus One Luxe Retreat.",
+      `Hello ${PROPERTY_MANAGER_NAME}, I would like to check availability for One Plus One Luxe Retreat.`,
       `Check-in: ${checkIn}`,
       `Checkout: ${checkout}`,
       `Guests: ${guestCount}`,
+      `Estimated total: ${estimatedTotalLabel}`,
+      `Price calculation: ${priceCalculationLabel}`,
       `Name: ${guestName.trim()}`,
       `Phone/WhatsApp: ${guestPhone.trim()}`,
       `Message: ${guestMessage.trim() || "No extra request yet."}`,
@@ -393,6 +610,13 @@ function AvailabilityBooking() {
   function handleSubmit(event) {
     event.preventDefault();
 
+    if (datesIncludeUnavailable) {
+      setSubmitNote(
+        "Your selected range includes unavailable dates. Please choose another date range.",
+      );
+      return;
+    }
+
     if (!isFormReady) {
       setSubmitNote(
         "Please complete the required booking request details first.",
@@ -401,11 +625,52 @@ function AvailabilityBooking() {
     }
 
     const requestMessage = buildRequestMessage();
-    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(
+
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${PROPERTY_MANAGER_WHATSAPP_NUMBER}&text=${encodeURIComponent(
       requestMessage,
     )}`;
 
-    setSubmitNote("Opening WhatsApp with your booking request message.");
+    setSubmitNote(
+      `Opening WhatsApp with ${PROPERTY_MANAGER_NAME}, ${PROPERTY_MANAGER_ROLE}.`,
+    );
+
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+  }
+
+  function handleBookNow() {
+    if (datesIncludeUnavailable) {
+      setSubmitNote(
+        "Your selected range includes unavailable dates. Please choose another date range.",
+      );
+      return;
+    }
+
+    if (!isFormReady) {
+      setSubmitNote("Please complete the required booking details first.");
+      return;
+    }
+
+    const bookNowMessage = [
+      `Hello ${PROPERTY_MANAGER_NAME}, I am ready to book One Plus One Luxe Retreat now.`,
+      `Check-in: ${checkIn}`,
+      `Checkout: ${checkout}`,
+      `Guests: ${guestCount}`,
+      `Estimated total: ${estimatedTotalLabel}`,
+      `Price calculation: ${priceCalculationLabel}`,
+      `Name: ${guestName.trim()}`,
+      `Phone/WhatsApp: ${guestPhone.trim()}`,
+      `Message: ${guestMessage.trim() || "No extra request yet."}`,
+      "Please help me complete this booking.",
+    ].join("\n");
+
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${PROPERTY_MANAGER_WHATSAPP_NUMBER}&text=${encodeURIComponent(
+      bookNowMessage,
+    )}`;
+
+    setSubmitNote(
+      `Opening booking request with ${PROPERTY_MANAGER_NAME}, ${PROPERTY_MANAGER_ROLE}.`,
+    );
+
     window.open(whatsappUrl, "_blank", "noopener,noreferrer");
   }
 
@@ -455,7 +720,7 @@ function AvailabilityBooking() {
               type="button"
               onClick={goToToday}
             >
-              Today
+              <span>Today</span>
             </button>
           </div>
 
@@ -476,6 +741,13 @@ function AvailabilityBooking() {
 
             {calendarCells.map((cell) => {
               const isPast = cell.date < todayDate;
+              const isUnavailable = Boolean(
+                cell.isCurrentMonth &&
+                isSimulatedUnavailableDate(cell.date, todayDate),
+              );
+              const isAvailable = Boolean(
+                cell.isCurrentMonth && !isPast && !isUnavailable,
+              );
               const isCheckIn = cell.iso === checkIn;
               const isCheckout = cell.iso === checkout;
               const isToday = cell.iso === todayIso;
@@ -491,21 +763,35 @@ function AvailabilityBooking() {
                 <button
                   className={`stay-booking__day ${
                     !cell.isCurrentMonth ? "is-outside" : ""
-                  } ${isPast ? "is-past" : ""} ${isToday ? "is-today" : ""} ${
-                    isCheckIn ? "is-check-in" : ""
-                  } ${isCheckout ? "is-checkout" : ""} ${
-                    isInRange ? "is-in-range" : ""
-                  } ${isFocused ? "is-focused" : ""}`}
+                  } ${isPast ? "is-past" : ""} ${
+                    isUnavailable ? "is-unavailable" : ""
+                  } ${isAvailable ? "is-available" : ""} ${
+                    isToday ? "is-today" : ""
+                  } ${isCheckIn ? "is-check-in" : ""} ${
+                    isCheckout ? "is-checkout" : ""
+                  } ${isInRange ? "is-in-range" : ""} ${
+                    isFocused ? "is-focused" : ""
+                  }`}
                   type="button"
                   key={cell.iso}
-                  disabled={!cell.isCurrentMonth || isPast}
+                  disabled={!cell.isCurrentMonth || isPast || isUnavailable}
                   aria-pressed={isCheckIn || isCheckout || isInRange}
                   aria-label={`${formatLongDate(cell.iso)}${
-                    isPast ? ", unavailable for past-date requests" : ""
-                  }`}
+                    isUnavailable
+                      ? ", unavailable"
+                      : cell.isCurrentMonth
+                        ? ", available, placeholder price $85"
+                        : ""
+                  }${isPast ? ", unavailable for past-date requests" : ""}`}
                   onClick={() => handleDateChoice(cell)}
                 >
-                  <span>{cell.dayNumber}</span>
+                  <span className="stay-booking__day-number">
+                    {cell.dayNumber}
+                  </span>
+
+                  {cell.isCurrentMonth ? (
+                    <span className="stay-booking__day-price">$85</span>
+                  ) : null}
                 </button>
               );
             })}
@@ -536,10 +822,21 @@ function AvailabilityBooking() {
             </div>
           </div>
 
-          <p className="stay-booking__manual-note">
-            Dates are requested first. The host confirms availability manually
-            before the stay is treated as booked.
-          </p>
+          <div
+            className="stay-booking__price-total"
+            aria-label="Estimated total price"
+            title={
+              shouldShowGhsTotal
+                ? `Converted from ${formatUsd(
+                    estimatedTotalUsd,
+                  )} at $1 ≈ ${formatGhsRate(usdToGhsRate)}`
+                : undefined
+            }
+          >
+            <span>Total estimate</span>
+            <strong>{estimatedTotalLabel}</strong>
+            <small>{priceCalculationLabel}</small>
+          </div>
         </aside>
 
         <form className="stay-booking__form" onSubmit={handleSubmit}>
@@ -625,6 +922,12 @@ function AvailabilityBooking() {
             </p>
           ) : null}
 
+          {datesIncludeUnavailable ? (
+            <p className="stay-booking__error" role="alert">
+              Your selected range includes unavailable dates.
+            </p>
+          ) : null}
+
           {submitNote ? (
             <p className="stay-booking__submit-note" role="status">
               {submitNote}
@@ -637,7 +940,17 @@ function AvailabilityBooking() {
             disabled={!isFormReady}
           >
             <span>Continue on WhatsApp</span>
-            <BookIcon />
+            <WhatsAppIcon className="stay-booking__whatsapp-icon" />
+          </button>
+
+          <button
+            className="stay-booking__book-now"
+            type="button"
+            disabled={!isFormReady}
+            onClick={handleBookNow}
+          >
+            <span>Book Now</span>
+            <BookNowIcon className="stay-booking__book-now-icon" />
           </button>
         </form>
       </div>
@@ -749,6 +1062,12 @@ export default function Stay() {
     );
 
     if (clickedInteractiveElement) return;
+
+    const clickedNativeScrollArea = event.target.closest(
+      ".stay-booking, [data-allow-native-scroll='true']",
+    );
+
+    if (clickedNativeScrollArea) return;
 
     const tapX = event.clientX;
     const screenMiddle = window.innerWidth / 2;

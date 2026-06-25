@@ -1322,3 +1322,2171 @@
     animation: none !important;
   }
 }
+
+/*
+  Final Availability layout + glow cleanup
+
+  This replaces all previous Availability override blocks.
+
+  Goals:
+  - Calendar, summary widget, and booking form top-align on large screens.
+  - No forced stretching on the two smaller widgets.
+  - No weird extra space inside the widgets.
+  - Calendar keeps a soft half-strength glow.
+  - Small screens hide the middle summary widget.
+  - Small screens scroll vertically inside Availability only.
+*/
+
+#availability,
+#availability .stay-page__panel-inner,
+#availability .stay-booking,
+#availability .stay-booking__workspace {
+  min-height: 0 !important;
+}
+
+/* ---------- Large screens ---------- */
+
+@media (min-width: 1024px) {
+  #availability .stay-page__panel-inner {
+    align-items: center !important;
+    overflow: visible !important;
+    padding-top: clamp(4.2rem, 7vh, 5.5rem) !important;
+    padding-bottom: clamp(6.3rem, 11vh, 7.6rem) !important;
+  }
+
+  #availability .stay-booking {
+    width: min(100%, 73rem) !important;
+    max-height: calc(
+      var(--stay-panel-height, 100vh) - clamp(10.4rem, 17vh, 12.8rem)
+    ) !important;
+
+    display: grid !important;
+    grid-template-rows: auto auto !important;
+    gap: clamp(0.58rem, 1.2vh, 0.82rem) !important;
+
+    overflow: visible !important;
+    padding: 0.08rem !important;
+  }
+
+  #availability .stay-booking__intro {
+    margin-bottom: 0 !important;
+    column-gap: clamp(1rem, 3vw, 2.4rem) !important;
+  }
+
+  #availability .stay-booking__intro .stay-page__eyebrow {
+    margin-bottom: 0.34rem !important;
+    font-size: clamp(0.56rem, 0.75vw, 0.68rem) !important;
+  }
+
+  #availability .stay-booking__intro .stay-page__kicker {
+    margin-bottom: clamp(0.48rem, 1.2vh, 0.78rem) !important;
+    padding-bottom: 0.32rem !important;
+    font-size: clamp(0.56rem, 0.75vw, 0.68rem) !important;
+  }
+
+  #availability .stay-booking__intro h2 {
+    font-size: clamp(2rem, 4.8vw, 4.2rem) !important;
+    line-height: 0.92 !important;
+  }
+
+  #availability .stay-booking__intro p:last-child {
+    font-size: clamp(0.72rem, 0.9vw, 0.84rem) !important;
+    line-height: 1.45 !important;
+  }
+
+  #availability .stay-booking__workspace {
+    display: grid !important;
+    grid-template-columns:
+      minmax(25rem, 1.08fr)
+      minmax(11.8rem, 0.38fr)
+      minmax(18rem, 0.7fr) !important;
+    gap: clamp(0.58rem, 1.2vw, 0.82rem) !important;
+
+    align-items: start !important;
+    overflow: visible !important;
+  }
+
+  #availability .stay-booking__calendar-shell,
+  #availability .stay-booking__aside,
+  #availability .stay-booking__form {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    align-self: start !important;
+  }
+
+  #availability .stay-booking__calendar-shell {
+    position: relative !important;
+    isolation: isolate !important;
+    overflow: visible !important;
+    z-index: 20 !important;
+
+    display: block !important;
+
+    padding: clamp(0.62rem, 1vw, 0.82rem) !important;
+    border-color: rgba(220, 196, 168, 0.42) !important;
+
+    transform: translateY(-0.12rem) scale(1.004) !important;
+
+    box-shadow:
+      0 0 0 1px rgba(248, 243, 238, 0.07),
+      0 0 7px rgba(220, 196, 168, 0.28),
+      0 0 17px rgba(201, 144, 96, 0.28),
+      0 0 37px rgba(201, 144, 96, 0.16),
+      0 26px 62px rgba(0, 0, 0, 0.5),
+      inset 0 0 12px rgba(201, 144, 96, 0.07),
+      inset 0 1px 0 rgba(248, 243, 238, 0.1) !important;
+  }
+
+  #availability .stay-booking__calendar-shell::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    z-index: 3;
+    pointer-events: none;
+    padding: 1px;
+
+    background: linear-gradient(
+      135deg,
+      rgba(176, 120, 72, 0.72),
+      rgba(201, 144, 96, 0.62),
+      rgba(220, 196, 168, 0.48),
+      rgba(248, 243, 238, 0.18),
+      rgba(176, 120, 72, 0.55)
+    );
+
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+
+    opacity: 0.48 !important;
+
+    box-shadow:
+      0 0 8px rgba(220, 196, 168, 0.25),
+      0 0 17px rgba(201, 144, 96, 0.21),
+      0 0 29px rgba(176, 120, 72, 0.14) !important;
+  }
+
+  #availability .stay-booking__calendar-shell::after {
+    content: "";
+    position: absolute;
+    inset: -1rem;
+    z-index: -1;
+    pointer-events: none;
+
+    background:
+      radial-gradient(
+        circle at 16% 72%,
+        rgba(201, 144, 96, 0.34),
+        rgba(201, 144, 96, 0.12) 34%,
+        transparent 68%
+      ),
+      radial-gradient(
+        circle at 86% 16%,
+        rgba(220, 196, 168, 0.26),
+        rgba(220, 196, 168, 0.1) 32%,
+        transparent 68%
+      );
+
+    filter: blur(14px) saturate(1.04) !important;
+    opacity: 0.42 !important;
+    animation: stayBookingCalendarGooeyGlow 10s ease-in-out infinite alternate;
+  }
+
+  #availability .stay-booking__calendar-header {
+    grid-template-columns: 2.25rem minmax(0, 1fr) 2.25rem auto !important;
+    gap: 0.42rem !important;
+    margin-bottom: 0.52rem !important;
+  }
+
+  #availability .stay-booking__month-button {
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+  }
+
+  #availability .stay-booking__today-button {
+    min-height: 2.25rem !important;
+    padding-inline: 0.78rem !important;
+    font-size: 0.58rem !important;
+  }
+
+  #availability .stay-booking__month-title {
+    padding: 0.28rem 0.42rem !important;
+  }
+
+  #availability .stay-booking__month-title span {
+    font-size: clamp(1.32rem, 2.45vw, 2.05rem) !important;
+  }
+
+  #availability .stay-booking__month-title strong {
+    margin-top: 0.08rem !important;
+    font-size: 0.54rem !important;
+  }
+
+  #availability .stay-booking__calendar-grid {
+    display: grid !important;
+    grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+    grid-template-rows: auto repeat(6, minmax(0, auto)) !important;
+    gap: 0.22rem !important;
+    height: auto !important;
+  }
+
+  #availability .stay-booking__weekday {
+    min-height: 1.08rem !important;
+    font-size: 0.52rem !important;
+  }
+
+  #availability .stay-booking__day {
+    min-height: clamp(1.9rem, 3.1vw, 2.42rem) !important;
+    height: auto !important;
+    display: grid !important;
+    place-items: center !important;
+  }
+
+  #availability .stay-booking__day span {
+    width: 1.48rem !important;
+    height: 1.48rem !important;
+    font-size: clamp(0.66rem, 0.85vw, 0.76rem) !important;
+  }
+
+  #availability .stay-booking__aside,
+  #availability .stay-booking__form {
+    position: relative !important;
+    isolation: isolate !important;
+    z-index: 12 !important;
+
+    display: grid !important;
+    align-content: start !important;
+    justify-content: stretch !important;
+
+    padding: clamp(0.54rem, 0.9vw, 0.72rem) !important;
+    gap: 0.34rem !important;
+
+    border-color: rgba(220, 196, 168, 0.28) !important;
+
+    box-shadow:
+      0 0 0 1px rgba(248, 243, 238, 0.04),
+      0 0 9px rgba(220, 196, 168, 0.1),
+      0 0 21px rgba(201, 144, 96, 0.09),
+      0 24px 58px rgba(0, 0, 0, 0.42),
+      inset 0 0 9px rgba(201, 144, 96, 0.04),
+      inset 0 1px 0 rgba(248, 243, 238, 0.08) !important;
+
+    transform: none !important;
+  }
+
+  #availability .stay-booking__aside::before,
+  #availability .stay-booking__form::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    z-index: 2;
+    pointer-events: none;
+    padding: 1px;
+
+    background: linear-gradient(
+      135deg,
+      rgba(176, 120, 72, 0.42),
+      rgba(201, 144, 96, 0.32),
+      rgba(220, 196, 168, 0.22),
+      rgba(248, 243, 238, 0.1),
+      rgba(176, 120, 72, 0.34)
+    );
+
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+
+    opacity: 0.36 !important;
+    box-shadow:
+      0 0 7px rgba(220, 196, 168, 0.12),
+      0 0 15px rgba(201, 144, 96, 0.09) !important;
+  }
+
+  #availability .stay-booking__aside::after,
+  #availability .stay-booking__form::after {
+    content: "";
+    position: absolute;
+    inset: -0.65rem;
+    z-index: -1;
+    pointer-events: none;
+
+    background: radial-gradient(
+      circle at 80% 80%,
+      rgba(201, 144, 96, 0.16),
+      rgba(201, 144, 96, 0.06) 38%,
+      transparent 72%
+    );
+
+    filter: blur(12px) saturate(1.02) !important;
+    opacity: 0.34 !important;
+    animation: stayBookingWidgetAura 9s ease-in-out infinite alternate;
+  }
+
+  #availability .stay-booking__aside > *,
+  #availability .stay-booking__form > * {
+    position: relative;
+    z-index: 3;
+  }
+
+  #availability .stay-booking__aside {
+    grid-template-rows: auto auto auto !important;
+  }
+
+  #availability .stay-booking__selected-day {
+    padding-bottom: 0.32rem !important;
+    gap: 0.12rem !important;
+    border-bottom-color: rgba(220, 196, 168, 0.16) !important;
+  }
+
+  #availability .stay-booking__selected-day span {
+    font-size: clamp(2.35rem, 4vw, 3.2rem) !important;
+    line-height: 0.82 !important;
+    text-shadow:
+      0 0 8px rgba(201, 144, 96, 0.25),
+      0 0 17px rgba(201, 144, 96, 0.12) !important;
+  }
+
+  #availability .stay-booking__selected-day strong {
+    margin-top: 0.1rem !important;
+    font-size: 0.58rem !important;
+    line-height: 1.18 !important;
+  }
+
+  #availability .stay-booking__selection-summary {
+    height: auto !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-rows: none !important;
+    grid-auto-rows: auto !important;
+    gap: 0.24rem !important;
+  }
+
+  #availability .stay-booking__selection-summary div {
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 0.26rem 0.42rem !important;
+    gap: 0.08rem !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+
+    border: 1px solid rgba(220, 196, 168, 0.12) !important;
+    background:
+      linear-gradient(135deg, rgba(248, 243, 238, 0.03), transparent 48%),
+      rgba(14, 12, 10, 0.16) !important;
+  }
+
+  #availability .stay-booking__selection-summary div::before {
+    opacity: 0.32 !important;
+    box-shadow: 0 0 7px rgba(201, 144, 96, 0.21) !important;
+  }
+
+  #availability .stay-booking__selection-summary span,
+  #availability .stay-booking__field span,
+  #availability .stay-booking__form-head span {
+    font-size: 0.5rem !important;
+    line-height: 1 !important;
+  }
+
+  #availability .stay-booking__selection-summary strong,
+  #availability .stay-booking__form-head strong {
+    margin-top: 0.06rem !important;
+    font-size: 0.68rem !important;
+    line-height: 1.1 !important;
+  }
+
+  #availability .stay-booking__manual-note {
+    margin: 0 !important;
+    padding: 0.38rem 0.44rem !important;
+    font-size: 0.54rem !important;
+    line-height: 1.22 !important;
+  }
+
+  #availability .stay-booking__form {
+    grid-template-rows: auto auto auto auto !important;
+  }
+
+  #availability .stay-booking__form-head {
+    margin-bottom: 0 !important;
+    padding-bottom: 0.3rem !important;
+  }
+
+  #availability .stay-booking__form-head strong {
+    margin-top: 0.14rem !important;
+  }
+
+  #availability .stay-booking__form-head::after {
+    opacity: 0.5 !important;
+    box-shadow: 0 0 8px rgba(201, 144, 96, 0.2) !important;
+  }
+
+  #availability .stay-booking__field-grid {
+    height: auto !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    align-content: start !important;
+    gap: 0.28rem !important;
+  }
+
+  #availability .stay-booking__field,
+  #availability .stay-booking__field--wide {
+    min-height: 0 !important;
+  }
+
+  #availability .stay-booking__field--wide {
+    grid-column: 1 / -1 !important;
+  }
+
+  #availability .stay-booking__field input,
+  #availability .stay-booking__field select {
+    min-height: 1.76rem !important;
+    margin-top: 0.16rem !important;
+    padding-inline: 0.46rem !important;
+    font-size: 0.61rem !important;
+  }
+
+  #availability .stay-booking__field textarea {
+    min-height: 2.55rem !important;
+    margin-top: 0.16rem !important;
+    padding: 0.46rem !important;
+    font-size: 0.61rem !important;
+    line-height: 1.22 !important;
+  }
+
+  #availability .stay-booking__field input:focus,
+  #availability .stay-booking__field select:focus,
+  #availability .stay-booking__field textarea:focus {
+    box-shadow:
+      0 0 0 1px rgba(201, 144, 96, 0.13),
+      0 0 9px rgba(201, 144, 96, 0.14),
+      inset 0 1px 0 rgba(248, 243, 238, 0.06) !important;
+  }
+
+  #availability .stay-booking__submit-note,
+  #availability .stay-booking__error {
+    margin: 0 !important;
+    font-size: 0.56rem !important;
+    line-height: 1.22 !important;
+  }
+
+  #availability .stay-booking__submit {
+    min-height: 1.95rem !important;
+    margin-top: 0 !important;
+    padding: 0.46rem 0.64rem !important;
+
+    box-shadow:
+      0 0 0 1px rgba(248, 243, 238, 0.04),
+      0 0 9px rgba(201, 144, 96, 0.11),
+      0 16px 38px rgba(0, 0, 0, 0.34),
+      inset 0 1px 0 rgba(248, 243, 238, 0.1) !important;
+  }
+
+  #availability .stay-booking__submit::before {
+    opacity: 0.36 !important;
+    filter: blur(10px) !important;
+  }
+
+  #availability .stay-booking__submit span {
+    font-size: 0.56rem !important;
+  }
+}
+
+/* ---------- Tablet ---------- */
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  #availability .stay-page__panel-inner {
+    align-items: center !important;
+    overflow: visible !important;
+    padding-top: calc(var(--stay-header-cover, 0px) + 3.8rem) !important;
+    padding-bottom: 6.2rem !important;
+  }
+
+  #availability .stay-booking {
+    width: min(100%, 58rem) !important;
+    max-height: calc(var(--stay-panel-height, 100vh) - 9.8rem) !important;
+    display: grid !important;
+    grid-template-rows: auto auto !important;
+    gap: 0.52rem !important;
+    overflow: visible !important;
+    padding: 0.08rem !important;
+  }
+
+  #availability .stay-booking__intro {
+    grid-template-columns: 1fr !important;
+    margin-bottom: 0 !important;
+  }
+
+  #availability .stay-booking__intro h2 {
+    font-size: clamp(1.72rem, 5vw, 3rem) !important;
+  }
+
+  #availability .stay-booking__intro p:last-child {
+    display: none !important;
+  }
+
+  #availability .stay-booking__workspace {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(15.5rem, 0.78fr) !important;
+    gap: 0.52rem !important;
+    align-items: start !important;
+    overflow: visible !important;
+  }
+
+  #availability .stay-booking__calendar-shell,
+  #availability .stay-booking__aside,
+  #availability .stay-booking__form {
+    height: auto !important;
+    min-height: 0 !important;
+    align-self: start !important;
+    padding: 0.54rem !important;
+  }
+
+  #availability .stay-booking__calendar-shell {
+    grid-column: 1 !important;
+    grid-row: 1 / span 2 !important;
+  }
+
+  #availability .stay-booking__aside {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    display: grid !important;
+    grid-template-columns: 0.34fr 1fr !important;
+    grid-template-rows: auto auto !important;
+    gap: 0.34rem !important;
+    align-content: start !important;
+  }
+
+  #availability .stay-booking__form {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    display: grid !important;
+    gap: 0.32rem !important;
+    align-content: start !important;
+  }
+
+  #availability .stay-booking__manual-note {
+    grid-column: 1 / -1 !important;
+  }
+
+  #availability .stay-booking__selected-day {
+    padding-bottom: 0 !important;
+    border-bottom: 0 !important;
+  }
+
+  #availability .stay-booking__selected-day span {
+    font-size: clamp(1.9rem, 5vw, 2.55rem) !important;
+  }
+
+  #availability .stay-booking__selected-day strong {
+    font-size: 0.54rem !important;
+    line-height: 1.18 !important;
+  }
+
+  #availability .stay-booking__selection-summary {
+    gap: 0.22rem !important;
+  }
+
+  #availability .stay-booking__selection-summary div {
+    padding: 0.28rem 0.42rem !important;
+  }
+
+  #availability .stay-booking__manual-note {
+    padding: 0.38rem 0.44rem !important;
+    font-size: 0.52rem !important;
+    line-height: 1.22 !important;
+  }
+
+  #availability .stay-booking__field-grid {
+    height: auto !important;
+    align-content: start !important;
+    gap: 0.28rem !important;
+  }
+
+  #availability .stay-booking__field input,
+  #availability .stay-booking__field select {
+    min-height: 1.72rem !important;
+    margin-top: 0.18rem !important;
+    font-size: 0.6rem !important;
+  }
+
+  #availability .stay-booking__field textarea {
+    min-height: 2.35rem !important;
+    margin-top: 0.18rem !important;
+    font-size: 0.6rem !important;
+  }
+
+  #availability .stay-booking__submit {
+    min-height: 1.95rem !important;
+    padding: 0.48rem 0.64rem !important;
+  }
+}
+
+/* ---------- Small screens ---------- */
+
+@media (max-width: 767px) {
+  #availability.stay-page__panel,
+  #availability .stay-page__panel-inner {
+    overflow: hidden !important;
+  }
+
+  #availability .stay-page__panel-inner {
+    height: 100% !important;
+    max-height: 100% !important;
+    display: block !important;
+
+    padding-top: calc(var(--stay-header-cover, 0px) + 3.95rem) !important;
+    padding-inline: var(--stay-page-padding-sm) !important;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 0.8rem) !important;
+  }
+
+  #availability .stay-booking {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+
+    display: block !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    overscroll-behavior: contain !important;
+    overscroll-behavior-y: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+
+    padding: 0.12rem 0.12rem calc(env(safe-area-inset-bottom) + 7rem) 0.12rem !important;
+
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(201, 144, 96, 0.7) rgba(248, 243, 238, 0.08) !important;
+  }
+
+  #availability .stay-booking::-webkit-scrollbar {
+    width: 0.25rem;
+  }
+
+  #availability .stay-booking::-webkit-scrollbar-track {
+    background: rgba(248, 243, 238, 0.08);
+  }
+
+  #availability .stay-booking::-webkit-scrollbar-thumb {
+    background: rgba(201, 144, 96, 0.7);
+  }
+
+  #availability .stay-booking__intro {
+    display: block !important;
+    margin-bottom: 0.62rem !important;
+    text-align: center !important;
+  }
+
+  #availability .stay-booking__intro .stay-page__eyebrow {
+    margin-bottom: 0.2rem !important;
+    font-size: 0.5rem !important;
+  }
+
+  #availability .stay-booking__intro .stay-page__kicker {
+    width: fit-content !important;
+    margin-inline: auto !important;
+    margin-bottom: 0.34rem !important;
+    padding-bottom: 0.24rem !important;
+    font-size: 0.5rem !important;
+  }
+
+  #availability .stay-booking__intro h2 {
+    max-width: 11em !important;
+    margin-inline: auto !important;
+    font-size: clamp(1.42rem, 8vw, 2.1rem) !important;
+    line-height: 0.96 !important;
+    text-align: center !important;
+  }
+
+  #availability .stay-booking__intro p:last-child {
+    display: none !important;
+  }
+
+  #availability .stay-booking__workspace {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.64rem !important;
+    overflow: visible !important;
+  }
+
+  #availability .stay-booking__aside {
+    display: none !important;
+  }
+
+  #availability .stay-booking__calendar-shell,
+  #availability .stay-booking__form {
+    width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 0.58rem !important;
+  }
+
+  #availability .stay-booking__calendar-header {
+    grid-template-columns: 2.05rem minmax(0, 1fr) 2.05rem !important;
+    gap: 0.32rem !important;
+    margin-bottom: 0.4rem !important;
+  }
+
+  #availability .stay-booking__today-button {
+    grid-column: 1 / -1 !important;
+    min-height: 1.9rem !important;
+    font-size: 0.5rem !important;
+  }
+
+  #availability .stay-booking__month-button {
+    width: 2.05rem !important;
+    height: 2.05rem !important;
+  }
+
+  #availability .stay-booking__month-title {
+    padding: 0.22rem 0.3rem !important;
+  }
+
+  #availability .stay-booking__month-title span {
+    font-size: clamp(1.05rem, 5.8vw, 1.5rem) !important;
+  }
+
+  #availability .stay-booking__month-title strong {
+    font-size: 0.48rem !important;
+  }
+
+  #availability .stay-booking__calendar-grid {
+    gap: 0.16rem !important;
+    height: auto !important;
+  }
+
+  #availability .stay-booking__weekday {
+    min-height: 0.94rem !important;
+    font-size: 0.46rem !important;
+  }
+
+  #availability .stay-booking__day {
+    min-height: clamp(1.55rem, 7.8vw, 2rem) !important;
+  }
+
+  #availability .stay-booking__day span {
+    width: 1.22rem !important;
+    height: 1.22rem !important;
+    font-size: 0.6rem !important;
+  }
+
+  #availability .stay-booking__form {
+    display: grid !important;
+    grid-template-rows: auto auto auto auto !important;
+    gap: 0.36rem !important;
+    align-content: start !important;
+  }
+
+  #availability .stay-booking__form-head {
+    margin-bottom: 0 !important;
+    padding-bottom: 0.34rem !important;
+  }
+
+  #availability .stay-booking__field-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.32rem !important;
+  }
+
+  #availability .stay-booking__field,
+  #availability .stay-booking__field--wide {
+    grid-column: auto !important;
+  }
+
+  #availability .stay-booking__field input,
+  #availability .stay-booking__field select {
+    min-height: 1.9rem !important;
+    margin-top: 0.18rem !important;
+    padding-inline: 0.5rem !important;
+    font-size: 0.64rem !important;
+  }
+
+  #availability .stay-booking__field textarea {
+    min-height: 3rem !important;
+    margin-top: 0.18rem !important;
+    padding: 0.5rem !important;
+    font-size: 0.64rem !important;
+    line-height: 1.28 !important;
+  }
+
+  #availability .stay-booking__submit {
+    min-height: 2.12rem !important;
+    margin-top: 0 !important;
+    padding: 0.5rem 0.7rem !important;
+  }
+
+  #availability .stay-booking__submit span {
+    font-size: 0.6rem !important;
+  }
+}
+
+@media (max-width: 430px) {
+  #availability .stay-page__panel-inner {
+    padding-top: calc(var(--stay-header-cover, 0px) + 3.7rem) !important;
+  }
+
+  #availability .stay-booking {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 6.8rem) !important;
+  }
+
+  #availability .stay-booking__calendar-shell,
+  #availability .stay-booking__form {
+    padding: 0.5rem !important;
+  }
+
+  #availability .stay-booking__intro h2 {
+    font-size: clamp(1.3rem, 7.5vw, 1.9rem) !important;
+  }
+
+  #availability .stay-booking__calendar-grid {
+    gap: 0.13rem !important;
+  }
+
+  #availability .stay-booking__day {
+    min-height: clamp(1.42rem, 7.2vw, 1.82rem) !important;
+  }
+
+  #availability .stay-booking__field-grid {
+    gap: 0.28rem !important;
+  }
+
+  #availability .stay-booking__field input,
+  #availability .stay-booking__field select {
+    min-height: 1.8rem !important;
+  }
+
+  #availability .stay-booking__field textarea {
+    min-height: 2.65rem !important;
+  }
+}
+
+/* ---------- Short screens ---------- */
+
+@media (min-width: 768px) and (max-height: 720px) {
+  #availability .stay-page__panel-inner {
+    padding-top: 3.5rem !important;
+    padding-bottom: 5.5rem !important;
+  }
+
+  #availability .stay-booking {
+    max-height: calc(var(--stay-panel-height, 100vh) - 8.8rem) !important;
+  }
+
+  #availability .stay-booking__intro h2 {
+    font-size: clamp(1.45rem, 4vw, 3rem) !important;
+  }
+
+  #availability .stay-booking__intro p:last-child {
+    display: none !important;
+  }
+
+  #availability .stay-booking__calendar-shell,
+  #availability .stay-booking__aside,
+  #availability .stay-booking__form {
+    padding: 0.46rem !important;
+  }
+
+  #availability .stay-booking__calendar-grid {
+    gap: 0.16rem !important;
+  }
+
+  #availability .stay-booking__day {
+    min-height: clamp(1.42rem, 2.8vw, 1.9rem) !important;
+  }
+
+  #availability .stay-booking__day span {
+    width: 1.16rem !important;
+    height: 1.16rem !important;
+    font-size: 0.56rem !important;
+  }
+
+  #availability .stay-booking__selection-summary div {
+    padding-top: 0.24rem !important;
+    padding-bottom: 0.24rem !important;
+  }
+
+  #availability .stay-booking__manual-note {
+    padding: 0.34rem 0.42rem !important;
+    font-size: 0.52rem !important;
+  }
+
+  #availability .stay-booking__field input,
+  #availability .stay-booking__field select {
+    min-height: 1.68rem !important;
+  }
+
+  #availability .stay-booking__field textarea {
+    min-height: 2.35rem !important;
+  }
+
+  #availability .stay-booking__submit {
+    min-height: 1.92rem !important;
+  }
+}
+
+@media (max-width: 767px) and (max-height: 720px) {
+  #availability .stay-page__panel-inner {
+    padding-top: calc(var(--stay-header-cover, 0px) + 3.55rem) !important;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 0.7rem) !important;
+  }
+
+  #availability .stay-booking {
+    overflow-y: auto !important;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 6.7rem) !important;
+  }
+}
+
+/* ---------- Motion ---------- */
+
+@keyframes stayBookingCalendarGooeyGlow {
+  0% {
+    opacity: 0.36;
+    transform: translate3d(0, 0, 0) scale(0.96);
+  }
+
+  25% {
+    opacity: 0.45;
+    transform: translate3d(0.7rem, 0.45rem, 0) scale(1.03);
+  }
+
+  50% {
+    opacity: 0.39;
+    transform: translate3d(-0.3rem, 0.72rem, 0) scale(0.98);
+  }
+
+  75% {
+    opacity: 0.5;
+    transform: translate3d(-0.65rem, -0.28rem, 0) scale(1.04);
+  }
+
+  100% {
+    opacity: 0.43;
+    transform: translate3d(0.36rem, -0.52rem, 0) scale(1.01);
+  }
+}
+
+@keyframes stayBookingWidgetAura {
+  0% {
+    opacity: 0.29;
+    transform: translate3d(0, 0, 0) scale(0.97);
+  }
+
+  50% {
+    opacity: 0.38;
+    transform: translate3d(0.4rem, 0.28rem, 0) scale(1.02);
+  }
+
+  100% {
+    opacity: 0.45;
+    transform: translate3d(-0.18rem, -0.34rem, 0) scale(1.03);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #availability .stay-booking__calendar-shell,
+  #availability .stay-booking__calendar-shell::after,
+  #availability .stay-booking__aside,
+  #availability .stay-booking__aside::after,
+  #availability .stay-booking__form,
+  #availability .stay-booking__form::after,
+  #availability .stay-booking__submit::before {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+/*
+  Small-screen Availability top clearance
+
+  Keeps the Availability content below the Availability button/header CTA.
+  The booking panel still scrolls internally and does not move to the next page.
+*/
+
+@media (max-width: 767px) {
+  #availability .stay-page__panel-inner {
+    padding-top: calc(var(--stay-header-cover, 0px) + 5.6rem) !important;
+  }
+
+  #availability .stay-booking {
+    height: 100% !important;
+    max-height: 100% !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    overscroll-behavior: contain !important;
+    overscroll-behavior-y: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+  }
+}
+
+/* Very small phones need a little more clearance */
+@media (max-width: 430px) {
+  #availability .stay-page__panel-inner {
+    padding-top: calc(var(--stay-header-cover, 0px) + 5.9rem) !important;
+  }
+}
+
+/* Short small screens: still keep it below the button, but not too low */
+@media (max-width: 767px) and (max-height: 720px) {
+  #availability .stay-page__panel-inner {
+    padding-top: calc(var(--stay-header-cover, 0px) + 5.25rem) !important;
+  }
+}
+
+/*
+  Small-screen middle booking widget restore
+
+  Shows the selected-date / booking-summary widget on small screens.
+  Keeps it neat:
+  - selected day on the left
+  - check-in / checkout / nights on the right
+  - manual note full-width below
+  - comfortable spacing, not cramped and not too loose
+*/
+
+@media (max-width: 767px) {
+  #availability .stay-booking__workspace {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.68rem !important;
+    overflow: visible !important;
+  }
+
+  #availability .stay-booking__aside {
+    display: grid !important;
+    grid-template-columns: minmax(4.6rem, 0.36fr) minmax(0, 1fr) !important;
+    grid-template-rows: auto auto !important;
+    align-items: stretch !important;
+    align-content: start !important;
+
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+
+    padding: 0.66rem !important;
+    gap: 0.56rem !important;
+
+    transform: none !important;
+  }
+
+  #availability .stay-booking__selected-day {
+    display: grid !important;
+    align-content: center !important;
+    justify-items: start !important;
+
+    padding: 0 !important;
+    border-bottom: 0 !important;
+    gap: 0.2rem !important;
+  }
+
+  #availability .stay-booking__selected-day span {
+    font-size: clamp(2.15rem, 11vw, 3.05rem) !important;
+    line-height: 0.84 !important;
+  }
+
+  #availability .stay-booking__selected-day strong {
+    max-width: 7.4rem !important;
+    margin-top: 0.2rem !important;
+
+    font-size: 0.58rem !important;
+    line-height: 1.22 !important;
+  }
+
+  #availability .stay-booking__selection-summary {
+    display: grid !important;
+    grid-template-rows: repeat(3, auto) !important;
+    gap: 0.34rem !important;
+
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  #availability .stay-booking__selection-summary div {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+
+    min-height: 0 !important;
+    height: auto !important;
+
+    padding: 0.42rem 0.52rem !important;
+    gap: 0.75rem !important;
+
+    border: 1px solid rgba(220, 196, 168, 0.12) !important;
+    background:
+      linear-gradient(135deg, rgba(248, 243, 238, 0.03), transparent 48%),
+      rgba(14, 12, 10, 0.18) !important;
+  }
+
+  #availability .stay-booking__selection-summary div::before {
+    top: 0.42rem !important;
+    bottom: 0.42rem !important;
+    opacity: 0.28 !important;
+  }
+
+  #availability .stay-booking__selection-summary span {
+    flex: 0 0 auto !important;
+    font-size: 0.5rem !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  #availability .stay-booking__selection-summary strong {
+    margin-top: 0 !important;
+    font-size: 0.66rem !important;
+    line-height: 1.12 !important;
+    text-align: right !important;
+  }
+
+  #availability .stay-booking__manual-note {
+    grid-column: 1 / -1 !important;
+
+    margin: 0 !important;
+    padding: 0.52rem 0.58rem !important;
+
+    font-size: 0.6rem !important;
+    line-height: 1.34 !important;
+
+    border: 1px solid rgba(220, 196, 168, 0.12) !important;
+    background:
+      radial-gradient(
+        circle at 0% 0%,
+        rgba(201, 144, 96, 0.09),
+        transparent 42%
+      ),
+      rgba(14, 12, 10, 0.2) !important;
+  }
+}
+
+/* Very small phones: keep it readable but slightly tighter */
+@media (max-width: 430px) {
+  #availability .stay-booking__aside {
+    grid-template-columns: minmax(4rem, 0.34fr) minmax(0, 1fr) !important;
+    padding: 0.56rem !important;
+    gap: 0.46rem !important;
+  }
+
+  #availability .stay-booking__selected-day span {
+    font-size: clamp(1.9rem, 10vw, 2.55rem) !important;
+  }
+
+  #availability .stay-booking__selected-day strong {
+    max-width: 6.4rem !important;
+    font-size: 0.54rem !important;
+  }
+
+  #availability .stay-booking__selection-summary {
+    gap: 0.28rem !important;
+  }
+
+  #availability .stay-booking__selection-summary div {
+    padding: 0.36rem 0.46rem !important;
+    gap: 0.55rem !important;
+  }
+
+  #availability .stay-booking__selection-summary strong {
+    font-size: 0.62rem !important;
+  }
+
+  #availability .stay-booking__manual-note {
+    padding: 0.46rem 0.52rem !important;
+    font-size: 0.56rem !important;
+    line-height: 1.28 !important;
+  }
+}
+
+/*
+  Small-screen Availability intro text top padding only
+
+  Adds breathing room above:
+  "Check your dates before booking."
+  Does not affect tablet or desktop.
+*/
+
+@media (max-width: 767px) {
+  #availability .stay-booking__intro p:last-child {
+    padding-top: 0.7rem !important;
+  }
+}
+
+/*
+  Small-screen Availability intro placement
+
+  Makes this intro block start below the Availability button:
+  Check Availability
+  Request first · Confirm manually
+  Check your dates before booking.
+*/
+
+@media (max-width: 767px) {
+  #availability .stay-page__panel-inner {
+    padding-top: calc(var(--stay-header-cover, 0px) + 5.85rem) !important;
+  }
+
+  #availability .stay-booking__intro {
+    display: block !important;
+    margin-top: 0 !important;
+    margin-bottom: 0.7rem !important;
+    padding-top: 0 !important;
+    text-align: center !important;
+  }
+
+  #availability .stay-booking__intro .stay-page__eyebrow,
+  #availability .stay-booking__intro .stay-page__kicker,
+  #availability .stay-booking__intro h2,
+  #availability .stay-booking__intro p:last-child {
+    display: block !important;
+  }
+
+  #availability .stay-booking__intro .stay-page__eyebrow {
+    margin-bottom: 0.22rem !important;
+  }
+
+  #availability .stay-booking__intro .stay-page__kicker {
+    width: fit-content !important;
+    margin-inline: auto !important;
+    margin-bottom: 0.44rem !important;
+  }
+
+  #availability .stay-booking__intro h2 {
+    margin-inline: auto !important;
+  }
+
+  #availability .stay-booking__intro p:last-child {
+    max-width: 20rem !important;
+    margin: 0.5rem auto 0 !important;
+    padding: 0 !important;
+    border-left: 0 !important;
+
+    color: rgba(248, 243, 238, 0.7) !important;
+    font-size: 0.68rem !important;
+    line-height: 1.4 !important;
+    text-align: center !important;
+  }
+}
+
+@media (max-width: 430px) {
+  #availability .stay-page__panel-inner {
+    padding-top: calc(var(--stay-header-cover, 0px) + 6.1rem) !important;
+  }
+
+  #availability .stay-booking__intro p:last-child {
+    max-width: 17.5rem !important;
+    font-size: 0.64rem !important;
+  }
+}
+
+/*
+  Small-screen only:
+  Push the "Check Availability" heading slightly downward.
+*/
+
+@media (max-width: 767px) {
+  #availability .stay-booking__intro h2 {
+    margin-top: 2rem !important;
+  }
+}
+
+/*
+  Calendar day spacing + hover glow
+
+  - Spreads the calendar days evenly inside the calendar widget.
+  - Adds slight breathing room around each number.
+  - Adds a soft glow when hovering over a selectable day.
+*/
+
+#availability .stay-booking__calendar-shell {
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
+}
+
+#availability .stay-booking__calendar-grid {
+  height: 100% !important;
+  min-height: 0 !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+  grid-template-rows: auto repeat(6, minmax(2.05rem, 1fr)) !important;
+
+  gap: clamp(0.22rem, 0.55vw, 0.36rem) !important;
+  align-content: stretch !important;
+  align-items: stretch !important;
+}
+
+#availability .stay-booking__weekday {
+  min-height: 1.05rem !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+#availability .stay-booking__day {
+  min-height: 0 !important;
+  height: 100% !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  padding: 0.16rem !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(248, 243, 238, 0.035),
+    0 0 0 rgba(201, 144, 96, 0) !important;
+}
+
+#availability .stay-booking__day span {
+  width: clamp(1.36rem, 2.2vw, 1.68rem) !important;
+  height: clamp(1.36rem, 2.2vw, 1.68rem) !important;
+
+  display: inline-grid !important;
+  place-items: center !important;
+
+  padding: 0.12rem !important;
+}
+
+/* Hover glow for selectable days */
+@media (hover: hover) {
+  #availability
+    .stay-booking__day:hover:not(:disabled):not(.is-past):not(.is-outside) {
+    color: var(--stay-cream) !important;
+    border-color: rgba(220, 196, 168, 0.58) !important;
+    background: radial-gradient(
+      circle at 50% 50%,
+      rgba(201, 144, 96, 0.18),
+      rgba(176, 120, 72, 0.12) 42%,
+      rgba(26, 22, 18, 0.78) 100%
+    ) !important;
+
+    transform: translateY(-1px) !important;
+
+    box-shadow:
+      0 0 0 1px rgba(248, 243, 238, 0.08),
+      0 0 8px rgba(220, 196, 168, 0.22),
+      0 0 16px rgba(201, 144, 96, 0.22),
+      0 8px 18px rgba(0, 0, 0, 0.28),
+      inset 0 1px 0 rgba(248, 243, 238, 0.08) !important;
+  }
+
+  #availability
+    .stay-booking__day:hover:not(:disabled):not(.is-past):not(.is-outside)
+    span {
+    text-shadow:
+      0 0 8px rgba(220, 196, 168, 0.34),
+      0 0 14px rgba(201, 144, 96, 0.22) !important;
+  }
+}
+
+/* Keep selected dates stronger than regular hover */
+#availability .stay-booking__day.is-check-in,
+#availability .stay-booking__day.is-checkout {
+  box-shadow:
+    0 0 0 1px rgba(248, 243, 238, 0.18),
+    0 0 8px rgba(220, 196, 168, 0.26),
+    0 0 15px rgba(201, 144, 96, 0.23),
+    inset 0 1px 0 rgba(248, 243, 238, 0.28) !important;
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1023px) {
+  #availability .stay-booking__calendar-grid {
+    grid-template-rows: auto repeat(6, minmax(1.82rem, 1fr)) !important;
+    gap: 0.2rem !important;
+  }
+
+  #availability .stay-booking__day {
+    padding: 0.12rem !important;
+  }
+
+  #availability .stay-booking__day span {
+    width: 1.28rem !important;
+    height: 1.28rem !important;
+  }
+}
+
+/* Small screens */
+@media (max-width: 767px) {
+  #availability .stay-booking__calendar-shell {
+    display: block !important;
+  }
+
+  #availability .stay-booking__calendar-grid {
+    height: auto !important;
+    grid-template-rows: auto repeat(6, minmax(1.62rem, auto)) !important;
+    gap: 0.18rem !important;
+  }
+
+  #availability .stay-booking__day {
+    min-height: clamp(1.62rem, 7.8vw, 2rem) !important;
+    height: auto !important;
+    padding: 0.12rem !important;
+  }
+
+  #availability .stay-booking__day span {
+    width: 1.22rem !important;
+    height: 1.22rem !important;
+    padding: 0.08rem !important;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 430px) {
+  #availability .stay-booking__calendar-grid {
+    gap: 0.14rem !important;
+    grid-template-rows: auto repeat(6, minmax(1.42rem, auto)) !important;
+  }
+
+  #availability .stay-booking__day {
+    min-height: clamp(1.42rem, 7.2vw, 1.82rem) !important;
+  }
+
+  #availability .stay-booking__day span {
+    width: 1.12rem !important;
+    height: 1.12rem !important;
+  }
+}
+
+/*
+  Stay page button pop-out + Today button animation fix
+
+  Applies only to the Stay page / Availability area.
+  Fixes:
+  - Today button sweep animation
+  - Button hover pop-out effect
+  - Calendar day hover glow
+  - WhatsApp CTA hover depth
+  - Carousel arrow hover depth
+*/
+
+/* Base pop-out behavior for Stay page buttons */
+.stay-page .stay-page__carousel-button,
+#availability .stay-booking__month-button,
+#availability .stay-booking__today-button,
+#availability .stay-booking__day,
+#availability .stay-booking__submit {
+  transform: translateY(0) scale(1) !important;
+  will-change:
+    transform, box-shadow, border-color, background, color !important;
+
+  transition:
+    transform 0.28s ease,
+    box-shadow 0.28s ease,
+    border-color 0.28s ease,
+    background 0.28s ease,
+    background-position 0.45s ease,
+    color 0.28s ease,
+    opacity 0.28s ease !important;
+}
+
+/* Fix Today button animation */
+#availability .stay-booking__today-button {
+  position: relative !important;
+  isolation: isolate !important;
+  overflow: hidden !important;
+
+  color: var(--stay-cream) !important;
+  border-color: rgba(220, 196, 168, 0.38) !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      transparent 0%,
+      transparent 42%,
+      rgba(201, 144, 96, 0.9) 43%,
+      var(--stay-copper-light) 56%,
+      var(--stay-sand) 68%,
+      transparent 69%,
+      transparent 100%
+    ),
+    rgba(14, 12, 10, 0.72) !important;
+
+  background-size:
+    260% 100%,
+    100% 100% !important;
+  background-position:
+    120% 0,
+    0 0 !important;
+
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.26),
+    inset 0 1px 0 rgba(248, 243, 238, 0.08) !important;
+}
+
+/* Disable the old Today pseudo animation so it does not fight the new one */
+#availability .stay-booking__today-button::after {
+  display: none !important;
+}
+
+/* Today button hover sweep */
+@media (hover: hover) {
+  #availability .stay-booking__today-button:hover:not(:disabled) {
+    color: var(--stay-black) !important;
+    border-color: rgba(248, 243, 238, 0.72) !important;
+
+    background-position:
+      -35% 0,
+      0 0 !important;
+
+    transform: translateY(-3px) scale(1.035) !important;
+
+    box-shadow:
+      0 0 0 1px rgba(248, 243, 238, 0.12),
+      0 0 14px rgba(220, 196, 168, 0.22),
+      0 0 28px rgba(201, 144, 96, 0.18),
+      0 18px 34px rgba(0, 0, 0, 0.38),
+      inset 0 1px 0 rgba(248, 243, 238, 0.18) !important;
+  }
+}
+
+/* Month arrow buttons pop out */
+@media (hover: hover) {
+  #availability .stay-booking__month-button:hover:not(:disabled) {
+    color: var(--stay-black) !important;
+    border-color: rgba(248, 243, 238, 0.72) !important;
+
+    transform: translateY(-3px) scale(1.06) !important;
+
+    box-shadow:
+      0 0 0 1px rgba(248, 243, 238, 0.12),
+      0 0 12px rgba(220, 196, 168, 0.22),
+      0 0 24px rgba(201, 144, 96, 0.16),
+      0 16px 30px rgba(0, 0, 0, 0.36),
+      inset 0 1px 0 rgba(248, 243, 238, 0.2) !important;
+  }
+}
+
+/* Calendar day buttons pop out and glow */
+@media (hover: hover) {
+  #availability
+    .stay-booking__day:hover:not(:disabled):not(.is-past):not(.is-outside) {
+    color: var(--stay-cream) !important;
+    border-color: rgba(220, 196, 168, 0.62) !important;
+
+    background: radial-gradient(
+      circle at 50% 50%,
+      rgba(201, 144, 96, 0.2),
+      rgba(176, 120, 72, 0.12) 44%,
+      rgba(26, 22, 18, 0.8) 100%
+    ) !important;
+
+    transform: translateY(-3px) scale(1.045) !important;
+
+    box-shadow:
+      0 0 0 1px rgba(248, 243, 238, 0.08),
+      0 0 8px rgba(220, 196, 168, 0.22),
+      0 0 18px rgba(201, 144, 96, 0.2),
+      0 14px 26px rgba(0, 0, 0, 0.34),
+      inset 0 1px 0 rgba(248, 243, 238, 0.08) !important;
+  }
+
+  #availability
+    .stay-booking__day:hover:not(:disabled):not(.is-past):not(.is-outside)
+    span {
+    text-shadow:
+      0 0 8px rgba(220, 196, 168, 0.32),
+      0 0 14px rgba(201, 144, 96, 0.2) !important;
+  }
+}
+
+/* Keep selected dates stronger than regular hover */
+#availability .stay-booking__day.is-check-in,
+#availability .stay-booking__day.is-checkout {
+  transform: translateY(0) scale(1) !important;
+
+  box-shadow:
+    0 0 0 1px rgba(248, 243, 238, 0.18),
+    0 0 8px rgba(220, 196, 168, 0.26),
+    0 0 15px rgba(201, 144, 96, 0.23),
+    inset 0 1px 0 rgba(248, 243, 238, 0.28) !important;
+}
+
+@media (hover: hover) {
+  #availability .stay-booking__day.is-check-in:hover,
+  #availability .stay-booking__day.is-checkout:hover {
+    transform: translateY(-3px) scale(1.045) !important;
+
+    box-shadow:
+      0 0 0 1px rgba(248, 243, 238, 0.28),
+      0 0 12px rgba(220, 196, 168, 0.34),
+      0 0 24px rgba(201, 144, 96, 0.28),
+      0 14px 26px rgba(0, 0, 0, 0.34),
+      inset 0 1px 0 rgba(248, 243, 238, 0.32) !important;
+  }
+}
+
+/* WhatsApp button pop out */
+@media (hover: hover) {
+  #availability .stay-booking__submit:hover:not(:disabled) {
+    transform: translateY(-3px) scale(1.025) !important;
+    color: var(--stay-black) !important;
+    border-color: rgba(248, 243, 238, 0.74) !important;
+
+    box-shadow:
+      0 0 0 1px rgba(248, 243, 238, 0.1),
+      0 0 12px rgba(220, 196, 168, 0.2),
+      0 0 24px rgba(201, 144, 96, 0.16),
+      0 20px 40px rgba(0, 0, 0, 0.42),
+      inset 0 1px 0 rgba(248, 243, 238, 0.18) !important;
+  }
+}
+
+/* Stay page carousel arrows pop out */
+@media (hover: hover) {
+  .stay-page .stay-page__carousel-button:hover:not(:disabled) {
+    transform: translateY(-4px) scale(1.06) !important;
+
+    box-shadow:
+      0 0 0 1px rgba(248, 243, 238, 0.12),
+      0 0 14px rgba(220, 196, 168, 0.2),
+      0 0 28px rgba(201, 144, 96, 0.16),
+      0 18px 34px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(248, 243, 238, 0.18) !important;
+  }
+}
+
+/* Pressed state: button dips slightly */
+.stay-page .stay-page__carousel-button:active:not(:disabled),
+#availability .stay-booking__month-button:active:not(:disabled),
+#availability .stay-booking__today-button:active:not(:disabled),
+#availability .stay-booking__day:active:not(:disabled),
+#availability .stay-booking__submit:active:not(:disabled) {
+  transform: translateY(-1px) scale(0.98) !important;
+}
+
+/* Disabled buttons should not pop */
+.stay-page .stay-page__carousel-button:disabled,
+#availability .stay-booking__month-button:disabled,
+#availability .stay-booking__today-button:disabled,
+#availability .stay-booking__day:disabled,
+#availability .stay-booking__submit:disabled {
+  transform: none !important;
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(248, 243, 238, 0.06) !important;
+}
+
+/* Small screens: keep pop-out lighter so layout does not jump */
+@media (max-width: 767px) {
+  @media (hover: hover) {
+    .stay-page .stay-page__carousel-button:hover:not(:disabled),
+    #availability .stay-booking__month-button:hover:not(:disabled),
+    #availability .stay-booking__today-button:hover:not(:disabled),
+    #availability .stay-booking__day:hover:not(:disabled),
+    #availability .stay-booking__submit:hover:not(:disabled) {
+      transform: translateY(-2px) scale(1.025) !important;
+    }
+  }
+}
+
+/*
+  Today button animation fix
+
+  Uses the same diagonal sweep style as the working booking CTA button.
+  This requires the Today text to be wrapped in:
+  <span>Today</span>
+*/
+
+#availability .stay-booking__today-button {
+  position: relative !important;
+  isolation: isolate !important;
+  overflow: hidden !important;
+
+  color: var(--stay-cream) !important;
+  background: rgba(14, 12, 10, 0.72) !important;
+  border-color: rgba(220, 196, 168, 0.34) !important;
+
+  transform: translateY(0) !important;
+
+  box-shadow:
+    0 12px 26px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(248, 243, 238, 0.1) !important;
+
+  transition:
+    color var(--stay-transition),
+    border-color var(--stay-transition),
+    transform var(--stay-transition),
+    box-shadow var(--stay-transition) !important;
+}
+
+/* Same sweep layer pattern as the working booking button */
+#availability .stay-booking__today-button::after {
+  content: "" !important;
+  display: block !important;
+
+  position: absolute !important;
+  z-index: -1 !important;
+
+  left: 0 !important;
+  top: 0 !important;
+
+  height: 490% !important;
+  width: 145% !important;
+
+  background: linear-gradient(
+    135deg,
+    var(--stay-copper) 0%,
+    var(--stay-copper-light) 42%,
+    var(--stay-sand) 100%
+  ) !important;
+
+  transform: translateX(-98%) translateY(-25%) rotate(45deg) !important;
+  transition: transform 0.5s ease-in-out !important;
+}
+
+/* Keep the Today text above the sweep */
+#availability .stay-booking__today-button span {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Hover: same sweep movement as the working CTA */
+#availability .stay-booking__today-button:hover:not(:disabled) {
+  color: var(--stay-black) !important;
+  border-color: rgba(248, 243, 238, 0.72) !important;
+  transform: translateY(-1px) !important;
+
+  box-shadow:
+    0 0 0 1px rgba(248, 243, 238, 0.08),
+    0 0 12px rgba(220, 196, 168, 0.18),
+    0 14px 28px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(248, 243, 238, 0.16) !important;
+}
+
+#availability .stay-booking__today-button:hover:not(:disabled)::after {
+  transform: translateX(-9%) translateY(-25%) rotate(45deg) !important;
+}
+
+/* Press state */
+#availability .stay-booking__today-button:active:not(:disabled) {
+  transform: translateY(0) scale(0.98) !important;
+}
+
+/*
+  Check-in / Checkout date icon styling
+
+  Makes the calendar icons inside the date boxes:
+  - white
+  - stronger/bolder
+  - easier to see
+*/
+
+#availability .stay-booking__field input[type="date"] {
+  color-scheme: dark !important;
+  font-weight: 600 !important;
+}
+
+/* Chrome / Edge / Safari date picker icon */
+#availability
+  .stay-booking__field
+  input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 1 !important;
+  cursor: pointer !important;
+
+  width: 1.1rem !important;
+  height: 1.1rem !important;
+
+  filter: brightness(0) invert(1) contrast(1.35)
+    drop-shadow(0 0 4px rgba(248, 243, 238, 0.28)) !important;
+}
+
+/* Hover: slightly brighter */
+#availability
+  .stay-booking__field
+  input[type="date"]:hover::-webkit-calendar-picker-indicator {
+  filter: brightness(0) invert(1) contrast(1.6)
+    drop-shadow(0 0 6px rgba(248, 243, 238, 0.42)) !important;
+}
+
+/* Small screens: keep the icon visible but not oversized */
+@media (max-width: 767px) {
+  #availability
+    .stay-booking__field
+    input[type="date"]::-webkit-calendar-picker-indicator {
+    width: 1rem !important;
+    height: 1rem !important;
+  }
+}
+
+/*
+  Calendar placeholder nightly price
+
+  Adds a dummy $85 price under each current-month date.
+  This is only a placeholder for future dynamic booking prices.
+*/
+
+#availability .stay-booking__day {
+  display: grid !important;
+  grid-template-rows: auto auto !important;
+  place-items: center !important;
+  align-content: center !important;
+
+  gap: 0.1rem !important;
+  padding: 0.18rem 0.12rem !important;
+}
+
+/* Override the old generic day span sizing */
+#availability .stay-booking__day span {
+  width: auto !important;
+  height: auto !important;
+  padding: 0 !important;
+}
+
+#availability .stay-booking__day-number {
+  display: inline-grid !important;
+  place-items: center !important;
+
+  min-width: 1.35rem !important;
+  min-height: 1.2rem !important;
+
+  color: inherit !important;
+  font-size: clamp(0.72rem, 0.9vw, 0.84rem) !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+}
+
+#availability .stay-booking__day-price {
+  display: block !important;
+
+  color: rgba(220, 196, 168, 0.68) !important;
+  font-size: clamp(0.48rem, 0.62vw, 0.56rem) !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.04em !important;
+}
+
+/* Past and outside days stay muted */
+#availability .stay-booking__day.is-past .stay-booking__day-price,
+#availability .stay-booking__day.is-outside .stay-booking__day-price {
+  color: rgba(248, 243, 238, 0.2) !important;
+}
+
+/* Selected dates keep price readable on the copper background */
+#availability .stay-booking__day.is-check-in .stay-booking__day-number,
+#availability .stay-booking__day.is-checkout .stay-booking__day-number,
+#availability .stay-booking__day.is-check-in .stay-booking__day-price,
+#availability .stay-booking__day.is-checkout .stay-booking__day-price {
+  color: var(--stay-black) !important;
+}
+
+/* In-range dates keep the price visible but softer */
+#availability .stay-booking__day.is-in-range .stay-booking__day-price {
+  color: rgba(248, 243, 238, 0.72) !important;
+}
+
+/* Hover glow also affects the price */
+@media (hover: hover) {
+  #availability
+    .stay-booking__day:hover:not(:disabled):not(.is-past):not(.is-outside)
+    .stay-booking__day-price {
+    color: rgba(248, 243, 238, 0.9) !important;
+
+    text-shadow:
+      0 0 7px rgba(220, 196, 168, 0.28),
+      0 0 12px rgba(201, 144, 96, 0.2) !important;
+  }
+
+  #availability .stay-booking__day.is-check-in:hover .stay-booking__day-price,
+  #availability .stay-booking__day.is-checkout:hover .stay-booking__day-price {
+    color: var(--stay-black) !important;
+  }
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1023px) {
+  #availability .stay-booking__day {
+    gap: 0.08rem !important;
+    padding: 0.14rem 0.08rem !important;
+  }
+
+  #availability .stay-booking__day-number {
+    font-size: 0.66rem !important;
+  }
+
+  #availability .stay-booking__day-price {
+    font-size: 0.46rem !important;
+  }
+}
+
+/* Small screens */
+@media (max-width: 767px) {
+  #availability .stay-booking__day {
+    gap: 0.07rem !important;
+    padding: 0.12rem 0.08rem !important;
+  }
+
+  #availability .stay-booking__day-number {
+    min-width: 1rem !important;
+    min-height: 1rem !important;
+    font-size: 0.6rem !important;
+  }
+
+  #availability .stay-booking__day-price {
+    font-size: 0.42rem !important;
+    letter-spacing: 0.02em !important;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 430px) {
+  #availability .stay-booking__day {
+    gap: 0.04rem !important;
+    padding: 0.1rem 0.06rem !important;
+  }
+
+  #availability .stay-booking__day-number {
+    font-size: 0.56rem !important;
+  }
+
+  #availability .stay-booking__day-price {
+    font-size: 0.38rem !important;
+  }
+}
+
+/*
+  Booking total price box
+
+  Replaces the old manual-confirmation note under Nights
+  with a clean estimated total calculation.
+*/
+
+#availability .stay-booking__price-total {
+  position: relative;
+  isolation: isolate;
+
+  margin: 0 !important;
+  padding: 0.56rem 0.62rem !important;
+
+  border: 1px solid rgba(220, 196, 168, 0.16);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(201, 144, 96, 0.12), transparent 44%),
+    rgba(14, 12, 10, 0.24);
+
+  box-shadow:
+    0 0 10px rgba(201, 144, 96, 0.06),
+    inset 0 1px 0 rgba(248, 243, 238, 0.06);
+}
+
+#availability .stay-booking__price-total span {
+  display: block;
+  color: rgba(220, 196, 168, 0.72);
+  font-size: 0.52rem;
+  line-height: 1;
+  letter-spacing: var(--stay-letter-wide);
+  text-transform: uppercase;
+}
+
+#availability .stay-booking__price-total strong {
+  display: block;
+  margin-top: 0.24rem;
+
+  color: var(--stay-cream);
+  font-family: var(--stay-font-display);
+  font-size: clamp(1.25rem, 2.6vw, 1.85rem);
+  font-weight: 500;
+  line-height: 0.95;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+#availability .stay-booking__price-total small {
+  display: block;
+  margin-top: 0.26rem;
+
+  color: rgba(248, 243, 238, 0.6);
+  font-size: 0.58rem;
+  line-height: 1.25;
+}
+
+/* Small screens: keep the total readable and neatly spaced */
+@media (max-width: 767px) {
+  #availability .stay-booking__price-total {
+    grid-column: 1 / -1 !important;
+    padding: 0.52rem 0.58rem !important;
+  }
+
+  #availability .stay-booking__price-total strong {
+    font-size: clamp(1.2rem, 7vw, 1.65rem);
+  }
+
+  #availability .stay-booking__price-total small {
+    font-size: 0.56rem;
+  }
+}
+
+@media (max-width: 430px) {
+  #availability .stay-booking__price-total {
+    padding: 0.46rem 0.52rem !important;
+  }
+
+  #availability .stay-booking__price-total strong {
+    font-size: clamp(1.1rem, 6.5vw, 1.45rem);
+  }
+
+  #availability .stay-booking__price-total small {
+    font-size: 0.52rem;
+  }
+}
+
+/*
+  Small-screen total box layout
+
+  Left:
+  Total estimate
+  5 nights × $85
+
+  Right:
+  $425
+*/
+
+@media (max-width: 767px) {
+  #availability .stay-booking__price-total {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-areas:
+      "label total"
+      "calc total" !important;
+
+    align-items: center !important;
+    column-gap: 1rem !important;
+    row-gap: 0.22rem !important;
+
+    text-align: left !important;
+  }
+
+  #availability .stay-booking__price-total span {
+    grid-area: label !important;
+
+    margin: 0 !important;
+    display: block !important;
+
+    text-align: left !important;
+    line-height: 1 !important;
+  }
+
+  #availability .stay-booking__price-total small {
+    grid-area: calc !important;
+
+    margin: 0 !important;
+    display: block !important;
+
+    text-align: left !important;
+    line-height: 1.2 !important;
+  }
+
+  #availability .stay-booking__price-total strong {
+    grid-area: total !important;
+
+    margin: 0 !important;
+    display: block !important;
+
+    justify-self: end !important;
+    align-self: center !important;
+
+    text-align: right !important;
+    white-space: nowrap !important;
+
+    font-size: clamp(1.35rem, 7vw, 1.85rem) !important;
+    line-height: 1 !important;
+  }
+}
+
+/*
+  Responsive price total fit
+
+  Keeps large USD/GHS totals from overlapping.
+  Works on desktop, tablet, and small screens.
+*/
+
+#availability .stay-booking__price-total,
+#availability .stay-booking__price-total * {
+  min-width: 0 !important;
+}
+
+#availability .stay-booking__price-total {
+  overflow: hidden !important;
+}
+
+#availability .stay-booking__price-total strong {
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  white-space: normal !important;
+
+  font-size: clamp(1rem, 2.1vw, 1.85rem) !important;
+  line-height: 1.02 !important;
+  letter-spacing: 0.035em !important;
+}
+
+#availability .stay-booking__price-total small {
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+/* Small screens: left label/calculation, right total */
+@media (max-width: 767px) {
+  #availability .stay-booking__price-total {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, auto) !important;
+    grid-template-areas:
+      "label total"
+      "calc total" !important;
+
+    align-items: center !important;
+    column-gap: 0.8rem !important;
+    row-gap: 0.22rem !important;
+
+    text-align: left !important;
+  }
+
+  #availability .stay-booking__price-total span {
+    grid-area: label !important;
+    text-align: left !important;
+  }
+
+  #availability .stay-booking__price-total small {
+    grid-area: calc !important;
+    text-align: left !important;
+
+    font-size: clamp(0.46rem, 2.55vw, 0.6rem) !important;
+    line-height: 1.2 !important;
+  }
+
+  #availability .stay-booking__price-total strong {
+    grid-area: total !important;
+
+    justify-self: end !important;
+    align-self: center !important;
+
+    max-width: min(46vw, 12rem) !important;
+
+    text-align: right !important;
+    font-size: clamp(0.95rem, 5vw, 1.55rem) !important;
+    line-height: 1.02 !important;
+    letter-spacing: 0.02em !important;
+  }
+}
+
+/* Very small phones: allow the amount to shrink/wrap safely */
+@media (max-width: 430px) {
+  #availability .stay-booking__price-total {
+    column-gap: 0.56rem !important;
+  }
+
+  #availability .stay-booking__price-total strong {
+    max-width: 43vw !important;
+    font-size: clamp(0.84rem, 4.75vw, 1.28rem) !important;
+    letter-spacing: 0.012em !important;
+  }
+
+  #availability .stay-booking__price-total small {
+    font-size: clamp(0.42rem, 2.45vw, 0.52rem) !important;
+  }
+}
