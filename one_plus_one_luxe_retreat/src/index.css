@@ -33,6 +33,10 @@ html.is-nav-controlled-scroll body {
   overscroll-behavior: none;
 }
 
+html.is-nav-controlled-scroll body {
+  overflow: hidden;
+}
+
 html.is-nav-controlled-scroll::-webkit-scrollbar,
 html.is-nav-controlled-scroll body::-webkit-scrollbar {
   display: none;
@@ -63,6 +67,109 @@ a {
 #root {
   width: 100%;
   min-height: 100vh;
+}
+
+/* 
+  Responsive contained scrolling:
+  On small screens or short screens, each page/panel can scroll internally.
+  The window itself stays locked, so scrolling inside one page will not move
+  into the next page.
+*/
+
+@media (max-width: 1023px), (max-height: 760px) {
+  .home-slider {
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden !important;
+  }
+
+  .home-slider__body,
+  .stay-page__panel-inner,
+  .gallery-page__panel-inner,
+  .amenities-page__panel-inner,
+  .location-page__panel-inner,
+  .reviews-page__panel-inner,
+  .faq-page__panel-inner,
+  .stay-booking {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(201, 144, 96, 0.72) rgba(248, 243, 238, 0.08);
+  }
+
+  .home-slider__body {
+    min-height: 0;
+    max-height: calc(100dvh - 2rem);
+    padding-bottom: 1rem;
+  }
+
+  .stay-page__panel-inner {
+    max-height: var(--stay-panel-height, 100dvh);
+  }
+
+  .gallery-page__panel-inner {
+    max-height: var(--gallery-panel-height, 100dvh);
+  }
+
+  .amenities-page__panel-inner {
+    max-height: var(--amenities-panel-height, 100dvh);
+  }
+
+  .location-page__panel-inner {
+    max-height: var(--location-panel-height, 100dvh);
+  }
+
+  .reviews-page__panel-inner {
+    max-height: var(--reviews-panel-height, 100dvh);
+  }
+
+  .faq-page__panel-inner {
+    max-height: var(--faq-panel-height, 100dvh);
+  }
+
+  .stay-page__panel,
+  .gallery-page__panel,
+  .amenities-page__panel,
+  .location-page__panel,
+  .reviews-page__panel,
+  .faq-page__panel {
+    overflow: hidden !important;
+  }
+
+  .home-slider__body::-webkit-scrollbar,
+  .stay-page__panel-inner::-webkit-scrollbar,
+  .gallery-page__panel-inner::-webkit-scrollbar,
+  .amenities-page__panel-inner::-webkit-scrollbar,
+  .location-page__panel-inner::-webkit-scrollbar,
+  .reviews-page__panel-inner::-webkit-scrollbar,
+  .faq-page__panel-inner::-webkit-scrollbar,
+  .stay-booking::-webkit-scrollbar {
+    width: 0.35rem;
+  }
+
+  .home-slider__body::-webkit-scrollbar-track,
+  .stay-page__panel-inner::-webkit-scrollbar-track,
+  .gallery-page__panel-inner::-webkit-scrollbar-track,
+  .amenities-page__panel-inner::-webkit-scrollbar-track,
+  .location-page__panel-inner::-webkit-scrollbar-track,
+  .reviews-page__panel-inner::-webkit-scrollbar-track,
+  .faq-page__panel-inner::-webkit-scrollbar-track,
+  .stay-booking::-webkit-scrollbar-track {
+    background: rgba(248, 243, 238, 0.08);
+  }
+
+  .home-slider__body::-webkit-scrollbar-thumb,
+  .stay-page__panel-inner::-webkit-scrollbar-thumb,
+  .gallery-page__panel-inner::-webkit-scrollbar-thumb,
+  .amenities-page__panel-inner::-webkit-scrollbar-thumb,
+  .location-page__panel-inner::-webkit-scrollbar-thumb,
+  .reviews-page__panel-inner::-webkit-scrollbar-thumb,
+  .faq-page__panel-inner::-webkit-scrollbar-thumb,
+  .stay-booking::-webkit-scrollbar-thumb {
+    background: rgba(201, 144, 96, 0.72);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

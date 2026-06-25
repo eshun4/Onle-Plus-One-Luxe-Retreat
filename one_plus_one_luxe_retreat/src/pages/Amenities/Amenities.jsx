@@ -442,6 +442,7 @@ function AmenityIcon({ name }) {
 export default function Amenities() {
   const [activePanel, setActivePanel] = useState(0);
   const [panelHeight, setPanelHeight] = useState("100vh");
+  const [headerCover, setHeaderCover] = useState("0px");
 
   const { theme, screens } = settings;
 
@@ -470,28 +471,30 @@ export default function Amenities() {
       "--amenities-transition-slow": theme.transitions.slow,
       "--amenities-panel-count": amenitySlides.length,
       "--amenities-panel-height": panelHeight,
+      "--amenities-header-cover": headerCover,
     }),
-    [theme, screens, panelHeight],
+    [theme, screens, panelHeight, headerCover],
   );
 
   useEffect(() => {
-    function updatePanelHeight() {
+    function updatePanelMeasurements() {
       const isSmallOrMedium = window.matchMedia("(max-width: 1023px)").matches;
-      const headerOffset = isSmallOrMedium
-        ? getFullHeaderHeight()
-        : getBannerHeight();
+      const bannerHeight = getBannerHeight();
+      const fullHeaderHeight = getFullHeaderHeight();
+      const nextHeaderCover = isSmallOrMedium
+        ? Math.max(0, fullHeaderHeight - bannerHeight)
+        : 0;
 
-      const nextPanelHeight = Math.max(420, window.innerHeight - headerOffset);
-
-      setPanelHeight(`${nextPanelHeight}px`);
+      setHeaderCover(`${nextHeaderCover}px`);
+      setPanelHeight(`${Math.max(420, window.innerHeight - bannerHeight)}px`);
     }
 
-    updatePanelHeight();
+    updatePanelMeasurements();
 
-    window.addEventListener("resize", updatePanelHeight);
+    window.addEventListener("resize", updatePanelMeasurements);
 
     return () => {
-      window.removeEventListener("resize", updatePanelHeight);
+      window.removeEventListener("resize", updatePanelMeasurements);
     };
   }, []);
 

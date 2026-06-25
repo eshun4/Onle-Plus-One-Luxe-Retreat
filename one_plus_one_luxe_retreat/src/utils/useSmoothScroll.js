@@ -141,6 +141,38 @@ function isTypingOrInteractiveTarget(target) {
   );
 }
 
+function getNativeScrollTarget(target) {
+  if (!target || !(target instanceof Element)) {
+    return null;
+  }
+
+  return target.closest(
+    "[data-native-scroll='true'], .gallery-page__panel-inner, .gallery-page__lightbox-caption",
+  );
+}
+
+function canNativeTargetScroll(scrollTarget, deltaY) {
+  if (!scrollTarget) {
+    return false;
+  }
+
+  const scrollRoom = scrollTarget.scrollHeight - scrollTarget.clientHeight;
+
+  if (scrollRoom <= 1) {
+    return false;
+  }
+
+  if (deltaY > 0) {
+    return scrollTarget.scrollTop < scrollRoom - 1;
+  }
+
+  if (deltaY < 0) {
+    return scrollTarget.scrollTop > 1;
+  }
+
+  return false;
+}
+
 export default function useSmoothScroll() {
   useEffect(() => {
     const scrollSettings = settings.navigation?.smoothScroll;
@@ -157,6 +189,7 @@ export default function useSmoothScroll() {
 
     let animationFrameId = null;
     let targetClassTimer = null;
+    let lastTouchY = null;
 
     document.documentElement.classList.add("is-nav-controlled-scroll");
 
@@ -176,11 +209,33 @@ export default function useSmoothScroll() {
     function blockManualWheelScroll(event) {
       if (event.ctrlKey) return;
 
+      const nativeScrollTarget = getNativeScrollTarget(event.target);
+
+      if (canNativeTargetScroll(nativeScrollTarget, event.deltaY)) {
+        return;
+      }
+
       event.preventDefault();
       event.stopPropagation();
     }
 
+    function trackNativeTouchStart(event) {
+      lastTouchY = event.touches?.[0]?.clientY ?? null;
+    }
+
     function blockManualTouchScroll(event) {
+      const nativeScrollTarget = getNativeScrollTarget(event.target);
+      const currentTouchY = event.touches?.[0]?.clientY ?? null;
+
+      if (nativeScrollTarget && currentTouchY !== null && lastTouchY !== null) {
+        const deltaY = lastTouchY - currentTouchY;
+        lastTouchY = currentTouchY;
+
+        if (canNativeTargetScroll(nativeScrollTarget, deltaY)) {
+          return;
+        }
+      }
+
       event.preventDefault();
       event.stopPropagation();
     }
@@ -188,6 +243,12 @@ export default function useSmoothScroll() {
     function blockManualKeyboardScroll(event) {
       if (!isScrollableKey(event)) return;
       if (isTypingOrInteractiveTarget(event.target)) return;
+
+      const nativeScrollTarget = getNativeScrollTarget(event.target);
+
+      if (nativeScrollTarget) {
+        return;
+      }
 
       event.preventDefault();
       event.stopPropagation();
@@ -285,6 +346,11 @@ export default function useSmoothScroll() {
       capture: true,
     });
 
+    window.addEventListener("touchstart", trackNativeTouchStart, {
+      passive: true,
+      capture: true,
+    });
+
     window.addEventListener("touchmove", blockManualTouchScroll, {
       passive: false,
       capture: true,
@@ -301,6 +367,10 @@ export default function useSmoothScroll() {
         capture: true,
       });
 
+      window.removeEventListener("touchstart", trackNativeTouchStart, {
+        capture: true,
+      });
+
       window.removeEventListener("touchmove", blockManualTouchScroll, {
         capture: true,
       });
@@ -311,17 +381,13 @@ export default function useSmoothScroll() {
 
       document.removeEventListener("click", handleAnchorClick);
 
-      document.documentElement.classList.remove(
-        "is-section-locking",
-        "is-nav-controlled-scroll",
-      );
-
-      if (targetClassTimer) {
-        clearTimeout(targetClassTimer);
-      }
-
-      clearActiveTargets();
       cancelCurrentAnimation();
+      clearTimeout(targetClassTimer);
+      clearActiveTargets();
+      document.documentElement.classList.remove(
+        "is-nav-controlled-scroll",
+        "is-section-locking",
+      );
     };
   }, []);
 }
