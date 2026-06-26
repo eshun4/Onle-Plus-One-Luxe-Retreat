@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: one_plus_one_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: one_plus_one_luxe_retreat
+    ports:
+      - "5432:5432"
+    volumes:
+      - one_plus_one_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  one_plus_one_postgres_data:
