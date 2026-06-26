@@ -1,0 +1,89 @@
+.admin-auth-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background:
+    radial-gradient(circle at top right, rgba(184, 115, 51, 0.18), transparent 34rem),
+    #101010;
+  color: #f5efe6;
+}
+
+.admin-auth-card {
+  width: min(100%, 28rem);
+  display: grid;
+  gap: 1rem;
+  padding: 1.6rem;
+  background: rgba(36, 32, 29, 0.9);
+  border: 1px solid rgba(216, 195, 165, 0.14);
+}
+
+.admin-auth-kicker {
+  margin: 0;
+  color: #d9a15f;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.72rem;
+}
+
+.admin-auth-card h1 {
+  margin: 0;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  letter-spacing: 0.04em;
+  line-height: 0.9;
+}
+
+.admin-auth-card span {
+  color: #9b9188;
+  line-height: 1.5;
+}
+
+.admin-auth-card label {
+  display: grid;
+  gap: 0.45rem;
+  color: #d8c3a5;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.admin-auth-card input {
+  width: 100%;
+  border: 1px solid rgba(216, 195, 165, 0.18);
+  background: rgba(0, 0, 0, 0.24);
+  color: #f5efe6;
+  padding: 0.85rem 0.9rem;
+  font: inherit;
+}
+
+.admin-auth-card input:focus {
+  outline: 1px solid #b87333;
+  border-color: #b87333;
+}
+
+.admin-auth-card button {
+  border: 1px solid rgba(184, 115, 51, 0.72);
+  background: transparent;
+  color: #d9a15f;
+  padding: 0.85rem 1rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.admin-auth-card button:hover {
+  background: #b87333;
+  color: #101010;
+}
+
+.admin-auth-switch {
+  border-color: rgba(216, 195, 165, 0.18) !important;
+  color: #d8c3a5 !important;
+}
+
+.admin-auth-error {
+  padding: 0.85rem;
+  border-left: 4px solid #d65b4a;
+  background: rgba(214, 91, 74, 0.08);
+  color: #f0a49b;
+}

@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { createReservation, getAvailability } from "../../lib/bookingApi";
+import { useEffect, useMemo, useState } from "react";
 import settings from "../../settings/settings";
 import "./Stay.css";
 
@@ -109,7 +108,7 @@ const stayPanels = [
 
 const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-const FALLBACK_NIGHTLY_RATE_USD = 70;
+const NIGHTLY_RATE_USD = 85;
 const GHANA_TIME_ZONE = "Africa/Accra";
 const USD_TO_GHS_RATE_URL = "https://open.er-api.com/v6/latest/USD";
 
@@ -264,48 +263,6 @@ function getNightCount(checkIn, checkout) {
   return Math.round((endDate - startDate) / 86400000);
 }
 
-function centsToUsd(cents) {
-  const amount = Number(cents);
-
-  if (!Number.isFinite(amount) || amount <= 0) {
-    return FALLBACK_NIGHTLY_RATE_USD;
-  }
-
-  return Math.round(amount / 100);
-}
-
-function isoDateIsInsideBlockedRange(isoDate, blockedRange) {
-  if (!isoDate || !blockedRange?.start_date || !blockedRange?.end_date) {
-    return false;
-  }
-
-  return (
-    compareIsoDates(isoDate, blockedRange.start_date) >= 0 &&
-    compareIsoDates(isoDate, blockedRange.end_date) < 0
-  );
-}
-
-function isBlockedDateIso(isoDate, blockedRanges) {
-  return blockedRanges.some((blockedRange) =>
-    isoDateIsInsideBlockedRange(isoDate, blockedRange),
-  );
-}
-
-function dateRangeOverlapsBlockedRanges(checkIn, checkout, blockedRanges) {
-  if (!checkIn || !checkout || compareIsoDates(checkout, checkIn) <= 0) {
-    return false;
-  }
-
-  return blockedRanges.some((blockedRange) => {
-    if (!blockedRange?.start_date || !blockedRange?.end_date) return false;
-
-    return (
-      compareIsoDates(checkIn, blockedRange.end_date) < 0 &&
-      compareIsoDates(checkout, blockedRange.start_date) > 0
-    );
-  });
-}
-
 function isSimulatedUnavailableDate(date, todayDate) {
   if (!date || date < todayDate) return false;
 
@@ -458,48 +415,6 @@ function AvailabilityBooking() {
   const [submitNote, setSubmitNote] = useState("");
   const [visitorIsInGhana] = useState(() => getVisitorIsLikelyInGhana());
   const [usdToGhsRate, setUsdToGhsRate] = useState(null);
-  const [nightlyRateUsd, setNightlyRateUsd] = useState(
-    FALLBACK_NIGHTLY_RATE_USD,
-  );
-  const [blockedRanges, setBlockedRanges] = useState([]);
-  const [availabilityStatus, setAvailabilityStatus] = useState("loading");
-  const [availabilityError, setAvailabilityError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const availabilityEndIso = useMemo(
-    () => toIsoDate(addDays(todayDate, 730)),
-    [todayDate],
-  );
-
-  const refreshAvailability = useCallback(async () => {
-    setAvailabilityStatus("loading");
-    setAvailabilityError("");
-
-    try {
-      const data = await getAvailability({
-        start: todayIso,
-        end: availabilityEndIso,
-      });
-
-      setBlockedRanges(data?.blocked_ranges || []);
-
-      if (data?.property?.base_nightly_rate_cents) {
-        setNightlyRateUsd(centsToUsd(data.property.base_nightly_rate_cents));
-      }
-
-      setAvailabilityStatus("ready");
-    } catch (error) {
-      setBlockedRanges([]);
-      setAvailabilityStatus("error");
-      setAvailabilityError(
-        error.message || "Unable to load live availability right now.",
-      );
-    }
-  }, [availabilityEndIso, todayIso]);
-
-  useEffect(() => {
-    refreshAvailability();
-  }, [refreshAvailability]);
 
   useEffect(() => {
     if (!visitorIsInGhana) return undefined;
@@ -542,38 +457,49 @@ function AvailabilityBooking() {
 
   const nights = getNightCount(checkIn, checkout);
 
-  const estimatedTotalUsd = nights * nightlyRateUsd;
+  /*
+    Pricing uses inclusive days.
+
+    Example:
+    Check-in Monday, checkout Tuesday
+    nights = 1
+    pricedDays = 2
+    total = 2 × $85
+  */
+  const pricedDays = nights ? nights + 1 : 0;
+
+  const estimatedTotalUsd = pricedDays * NIGHTLY_RATE_USD;
   const estimatedTotalGhs = usdToGhsRate ? estimatedTotalUsd * usdToGhsRate : 0;
 
   const shouldShowGhsTotal = Boolean(
     visitorIsInGhana &&
-    nights &&
+    pricedDays &&
     Number.isFinite(estimatedTotalGhs) &&
     estimatedTotalGhs > 0,
   );
 
-  const nightlyRateLabel = formatUsd(nightlyRateUsd);
+  const nightlyRateLabel = formatUsd(NIGHTLY_RATE_USD);
 
-  const estimatedTotalLabel = nights
+  const estimatedTotalLabel = pricedDays
     ? shouldShowGhsTotal
       ? formatGhs(estimatedTotalGhs)
       : formatUsd(estimatedTotalUsd)
     : "—";
 
-  const priceCalculationLabel = nights
+  const priceCalculationLabel = pricedDays
     ? shouldShowGhsTotal
-      ? `${nights} ${
-          nights === 1 ? "night" : "nights"
+      ? `${pricedDays} ${
+          pricedDays === 1 ? "day" : "days"
         } × ${nightlyRateLabel} · $1≈${formatGhsRate(usdToGhsRate)}`
-      : `${nights} ${nights === 1 ? "night" : "nights"} × ${nightlyRateLabel}`
+      : `${pricedDays} ${pricedDays === 1 ? "day" : "days"} × ${nightlyRateLabel}`
     : visitorIsInGhana
       ? "Select dates to calculate in Ghana cedis"
-      : `Select dates to calculate ${nightlyRateLabel} per night`;
+      : `Select dates to calculate ${nightlyRateLabel} per day`;
 
-  const datesIncludeUnavailable = dateRangeOverlapsBlockedRanges(
+  const datesIncludeUnavailable = dateRangeHasUnavailableDate(
     checkIn,
     checkout,
-    blockedRanges,
+    todayDate,
   );
 
   const hasValidDates = Boolean(
@@ -587,10 +513,6 @@ function AvailabilityBooking() {
     hasValidDates && guestCount && guestName.trim() && guestPhone.trim(),
   );
 
-  const canSubmit = Boolean(
-    isFormReady && availabilityStatus === "ready" && !isSubmitting,
-  );
-
   function setMonthFromIsoDate(value) {
     const date = fromIsoDate(value);
 
@@ -600,23 +522,11 @@ function AvailabilityBooking() {
   }
 
   function handleDateChoice(cell) {
-    const selectedIso = cell.iso;
-    const dateIsBlocked = isBlockedDateIso(selectedIso, blockedRanges);
-    const isChoosingCheckout = Boolean(
-      checkIn && !checkout && compareIsoDates(selectedIso, checkIn) > 0,
-    );
-    const canUseAsCheckout = Boolean(
-      isChoosingCheckout &&
-        !dateRangeOverlapsBlockedRanges(checkIn, selectedIso, blockedRanges),
-    );
+    const isUnavailable = isSimulatedUnavailableDate(cell.date, todayDate);
 
-    if (
-      !cell.isCurrentMonth ||
-      cell.date < todayDate ||
-      (dateIsBlocked && !canUseAsCheckout)
-    ) {
-      return;
-    }
+    if (!cell.isCurrentMonth || cell.date < todayDate || isUnavailable) return;
+
+    const selectedIso = cell.iso;
 
     setFocusedDate(selectedIso);
     setSubmitNote("");
@@ -633,10 +543,10 @@ function AvailabilityBooking() {
       return;
     }
 
-    const nextRangeHasUnavailableDate = dateRangeOverlapsBlockedRanges(
+    const nextRangeHasUnavailableDate = dateRangeHasUnavailableDate(
       checkIn,
       selectedIso,
-      blockedRanges,
+      todayDate,
     );
 
     if (nextRangeHasUnavailableDate) {
@@ -682,10 +592,9 @@ function AvailabilityBooking() {
     setFocusedDate(todayIso);
   }
 
-  function buildRequestMessage(reservationId) {
+  function buildRequestMessage() {
     return [
       `Hello ${PROPERTY_MANAGER_NAME}, I would like to check availability for One Plus One Luxe Retreat.`,
-      reservationId ? `Reservation hold ID: ${reservationId}` : null,
       `Check-in: ${checkIn}`,
       `Checkout: ${checkout}`,
       `Guests: ${guestCount}`,
@@ -694,43 +603,12 @@ function AvailabilityBooking() {
       `Name: ${guestName.trim()}`,
       `Phone/WhatsApp: ${guestPhone.trim()}`,
       `Message: ${guestMessage.trim() || "No extra request yet."}`,
-      "The website has placed these dates on hold. Please confirm the booking details.",
-    ]
-      .filter(Boolean)
-      .join("\n");
+      "Please confirm if these dates are available.",
+    ].join("\n");
   }
 
-  function buildBookNowMessage(reservationId) {
-    return [
-      `Hello ${PROPERTY_MANAGER_NAME}, I am ready to book One Plus One Luxe Retreat now.`,
-      reservationId ? `Reservation hold ID: ${reservationId}` : null,
-      `Check-in: ${checkIn}`,
-      `Checkout: ${checkout}`,
-      `Guests: ${guestCount}`,
-      `Estimated total: ${estimatedTotalLabel}`,
-      `Price calculation: ${priceCalculationLabel}`,
-      `Name: ${guestName.trim()}`,
-      `Phone/WhatsApp: ${guestPhone.trim()}`,
-      `Message: ${guestMessage.trim() || "No extra request yet."}`,
-      "The website has placed these dates on hold. Please help me complete this booking.",
-    ]
-      .filter(Boolean)
-      .join("\n");
-  }
-
-  async function submitReservationAndOpenWhatsApp(messageType) {
-    if (availabilityStatus === "loading") {
-      setSubmitNote("Live availability is still loading. Please try again in a moment.");
-      return;
-    }
-
-    if (availabilityStatus === "error") {
-      setSubmitNote(
-        availabilityError ||
-          "Live availability could not be loaded. Please refresh and try again.",
-      );
-      return;
-    }
+  function handleSubmit(event) {
+    event.preventDefault();
 
     if (datesIncludeUnavailable) {
       setSubmitNote(
@@ -746,53 +624,54 @@ function AvailabilityBooking() {
       return;
     }
 
-    setIsSubmitting(true);
-    setSubmitNote("Checking live availability and placing your dates on hold...");
+    const requestMessage = buildRequestMessage();
 
-    try {
-      const createdReservation = await createReservation({
-        checkIn,
-        checkout,
-        guestCount,
-        guestName,
-        guestPhone,
-        guestMessage,
-      });
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${PROPERTY_MANAGER_WHATSAPP_NUMBER}&text=${encodeURIComponent(
+      requestMessage,
+    )}`;
 
-      await refreshAvailability();
+    setSubmitNote(
+      `Opening WhatsApp with ${PROPERTY_MANAGER_NAME}, ${PROPERTY_MANAGER_ROLE}.`,
+    );
 
-      const reservationId = createdReservation.reservation?.id;
-      const message =
-        messageType === "book"
-          ? buildBookNowMessage(reservationId)
-          : buildRequestMessage(reservationId);
-
-      const whatsappUrl = `https://api.whatsapp.com/send?phone=${PROPERTY_MANAGER_WHATSAPP_NUMBER}&text=${encodeURIComponent(
-        message,
-      )}`;
-
-      setSubmitNote(
-        `Your dates are now on hold. Opening WhatsApp with ${PROPERTY_MANAGER_NAME}, ${PROPERTY_MANAGER_ROLE}.`,
-      );
-
-      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
-    } catch (error) {
-      setSubmitNote(
-        error.message ||
-          "Those dates could not be reserved. Please try another date range.",
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  function handleSubmit(event) {
-    event.preventDefault();
-    submitReservationAndOpenWhatsApp("request");
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
   }
 
   function handleBookNow() {
-    submitReservationAndOpenWhatsApp("book");
+    if (datesIncludeUnavailable) {
+      setSubmitNote(
+        "Your selected range includes unavailable dates. Please choose another date range.",
+      );
+      return;
+    }
+
+    if (!isFormReady) {
+      setSubmitNote("Please complete the required booking details first.");
+      return;
+    }
+
+    const bookNowMessage = [
+      `Hello ${PROPERTY_MANAGER_NAME}, I am ready to book One Plus One Luxe Retreat now.`,
+      `Check-in: ${checkIn}`,
+      `Checkout: ${checkout}`,
+      `Guests: ${guestCount}`,
+      `Estimated total: ${estimatedTotalLabel}`,
+      `Price calculation: ${priceCalculationLabel}`,
+      `Name: ${guestName.trim()}`,
+      `Phone/WhatsApp: ${guestPhone.trim()}`,
+      `Message: ${guestMessage.trim() || "No extra request yet."}`,
+      "Please help me complete this booking.",
+    ].join("\n");
+
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${PROPERTY_MANAGER_WHATSAPP_NUMBER}&text=${encodeURIComponent(
+      bookNowMessage,
+    )}`;
+
+    setSubmitNote(
+      `Opening booking request with ${PROPERTY_MANAGER_NAME}, ${PROPERTY_MANAGER_ROLE}.`,
+    );
+
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
   }
 
   return (
@@ -802,8 +681,8 @@ function AvailabilityBooking() {
         <p className="stay-page__kicker">Request first · Confirm manually</p>
         <h2>Check your dates before booking.</h2>
         <p>
-          Choose your preferred dates and send a booking request. The website
-          checks live blocked dates before placing your request on hold.
+          Choose your preferred dates and send a booking request. This first
+          version does not confirm live availability or take payment yet.
         </p>
       </div>
 
@@ -862,21 +741,9 @@ function AvailabilityBooking() {
 
             {calendarCells.map((cell) => {
               const isPast = cell.date < todayDate;
-              const dateIsBlocked = isBlockedDateIso(cell.iso, blockedRanges);
-              const isChoosingCheckout = Boolean(
-                checkIn && !checkout && compareIsoDates(cell.iso, checkIn) > 0,
-              );
-              const canUseAsCheckout = Boolean(
-                isChoosingCheckout &&
-                  !dateIsBlocked &&
-                  !dateRangeOverlapsBlockedRanges(
-                    checkIn,
-                    cell.iso,
-                    blockedRanges,
-                  ),
-              );
               const isUnavailable = Boolean(
-                cell.isCurrentMonth && dateIsBlocked,
+                cell.isCurrentMonth &&
+                isSimulatedUnavailableDate(cell.date, todayDate),
               );
               const isAvailable = Boolean(
                 cell.isCurrentMonth && !isPast && !isUnavailable,
@@ -913,7 +780,7 @@ function AvailabilityBooking() {
                     isUnavailable
                       ? ", unavailable"
                       : cell.isCurrentMonth
-                        ? `, available, ${nightlyRateLabel} per night`
+                        ? ", available, placeholder price $85"
                         : ""
                   }${isPast ? ", unavailable for past-date requests" : ""}`}
                   onClick={() => handleDateChoice(cell)}
@@ -923,9 +790,7 @@ function AvailabilityBooking() {
                   </span>
 
                   {cell.isCurrentMonth ? (
-                    <span className="stay-booking__day-price">
-                      {nightlyRateLabel}
-                    </span>
+                    <span className="stay-booking__day-price">$85</span>
                   ) : null}
                 </button>
               );
@@ -1010,7 +875,7 @@ function AvailabilityBooking() {
                 onChange={(event) => setGuestCount(event.target.value)}
                 required
               >
-                {[1, 2, 3].map((count) => (
+                {[1, 2, 3, 4].map((count) => (
                   <option value={count} key={count}>
                     {count} {count === 1 ? "guest" : "guests"}
                   </option>
@@ -1051,18 +916,6 @@ function AvailabilityBooking() {
             </label>
           </div>
 
-          {availabilityStatus === "loading" ? (
-            <p className="stay-booking__submit-note" role="status">
-              Loading live availability...
-            </p>
-          ) : null}
-
-          {availabilityStatus === "error" ? (
-            <p className="stay-booking__error" role="alert">
-              {availabilityError}
-            </p>
-          ) : null}
-
           {checkout && checkIn && compareIsoDates(checkout, checkIn) <= 0 ? (
             <p className="stay-booking__error" role="alert">
               Checkout must be after check-in.
@@ -1084,19 +937,19 @@ function AvailabilityBooking() {
           <button
             className="stay-booking__submit"
             type="submit"
-            disabled={!canSubmit}
+            disabled={!isFormReady}
           >
-            <span>{isSubmitting ? "Holding dates..." : "Continue on WhatsApp"}</span>
+            <span>Continue on WhatsApp</span>
             <WhatsAppIcon className="stay-booking__whatsapp-icon" />
           </button>
 
           <button
             className="stay-booking__book-now"
             type="button"
-            disabled={!canSubmit}
+            disabled={!isFormReady}
             onClick={handleBookNow}
           >
-            <span>{isSubmitting ? "Holding dates..." : "Book Now"}</span>
+            <span>Book Now</span>
             <BookNowIcon className="stay-booking__book-now-icon" />
           </button>
         </form>

@@ -10,10 +10,14 @@ import Reviews from "./pages/Reviews/Reviews";
 import Faq from "./pages/Faq/Faq";
 import useSmoothScroll from "./utils/useSmoothScroll";
 import "./App.css";
+import AdminDashboard from "./pages/AdminDashboard/AdminDashboard.jsx";
+import AdminAuthGate from "./pages/AdminDashboard/AdminAuthGate.jsx";
 
 function App() {
   useSmoothScroll();
-
+  if (window.location.pathname === "/admin") {
+    return <AdminAuthGate />;
+  }
   return (
     <div className="app">
       <CustomCursor />
